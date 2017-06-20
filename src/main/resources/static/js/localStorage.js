@@ -1,0 +1,1 @@
+localStorage.setItem('pageMaxSize',15);

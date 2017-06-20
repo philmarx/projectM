@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<script type="text/javascript"
+	src="plugins/jquery-easyui-1.5.2/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/localStorage.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+
+header a {
+	color: white;
+	font-size: 1.5em;
+	margin-left: 2em;
+	text-decoration: none;
+}
+
+header a:HOVER {
+	text-decoration: underline;
+}
+</style>
+</head>
+<body>
+	<header
+		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
+		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="login.html" style="float: right; margin-right: 2em;">登录</a>
+	</header>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-12">
+				<h3>查看申诉用户的坐标</h3>
+			</div>
+		</div>
+		<div class="rom">
+			<div class="col-lg-12">
+				<p>用户ID:<span id="userId"></span></p>
+				<p>用户名:<span id="username"></span></p>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>经度</th>
+							<th>纬度</th>
+							<th>房间号</th>
+							<th>日期</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<ul id="pagination"></ul>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function load() {
+			var id=sessionStorage.getItem("locationUserId");
+			if(!id){
+				return;
+			}
+			$.post('/admin/findUserInfo',{"userId" : sessionStorage.getItem('userId'),"token" : sessionStorage.getItem('token'),"id":id},function(json){
+				if(json.success){
+					$('#userId').html(json.data.id);
+					$('#username').html(json.data.nickname);
+				}else{
+					alert(json.msg);
+				}
+			},'json');
+			var params = {
+				"userId" : sessionStorage.getItem('userId'),
+				"token" : sessionStorage.getItem('token'),
+				"page" : 0,
+				"size" : localStorage.getItem('pageMaxSize'),
+				"id":sessionStorage.getItem('locationUserId')
+			}
+			$.post('/admin/findLocation', params, function(json) {
+				if (json.success) {
+					$('#pagination').pagination(5, json.data.totalPages,
+							localStorage.getItem('pageMaxSize'), handler);
+					handler(1,localStorage.getItem('pageMaxSize'));
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		function handler(pageNumber, pageSize) {
+			var params = {
+				"userId" : sessionStorage.getItem('userId'),
+				"token" : sessionStorage.getItem('token'),
+				"page" : pageNumber - 1,
+				"size" : pageSize,
+				"id":sessionStorage.getItem('locationUserId')
+			}
+			$.post('/admin/findLocation', params, function(json) {
+				if (json.success) {
+					var $tbody=$('tbody');
+					$tbody.html('');
+					$.each(json.data.content,function(i,o){
+						var $tr=$('<tr></tr>').append('<td>'+o.longitude+'</td>').append('<td>'+o.latitude+'</td>');
+						var roomId='';
+						if(o.room){
+							roomId=o.room.id;
+						}
+						$tr.append('<td>'+roomId+'</td>');
+						$tr.append('<td>'+o.sendTime+'</td>');
+						$tbody.append($tr);
+					});
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		function jieDong(id){
+			$.post('/admin/jieDong',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
+				if(json.success){
+					$('#tr'+id+'').hide();
+					alert('解冻成功');
+				}else{
+					alert(json.msg);
+				}
+			},'json');
+		}
+		function fenFa(id){
+			$.post('/admin/fenFa',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
+				if(json.success){
+					$('#tr'+id+'').hide();
+					alert('分发成功');
+				}else{
+					alert(json.msg);
+				}
+			},'json');
+		}
+		$(function() {
+			load();
+		});
+	</script>
+</body>
+</html>

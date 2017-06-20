@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<script type="text/javascript"
+	src="plugins/jquery-easyui-1.5.2/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/localStorage.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+
+header a {
+	color: white;
+	font-size: 1.5em;
+	margin-left: 2em;
+	text-decoration: none;
+}
+
+header a:HOVER {
+	text-decoration: underline;
+}
+</style>
+</head>
+<body>
+	<header
+		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
+		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="login.html" style="float: right; margin-right: 2em;">登录</a>
+	</header>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-12">
+				<h3>查看建议</h3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>提现者ID</th>
+							<th>提现者姓名</th>
+							<th>支付宝账号</th>
+							<th>提现金额</th>
+							<th>申请时间</th>
+							<th>是否处理</th>
+							<th>处理</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<ul id="pagination"></ul>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function load() {
+			var userId=sessionStorage.getItem('userId');
+			if(!userId){
+				return;
+			}
+			var params = {
+				"userId" : userId,
+				"token" : sessionStorage.getItem('token'),
+				"page" : 0,
+				"size" : localStorage.getItem('pageMaxSize')
+			}
+			$.post('/admin/findSuggestions', params, function(json) {
+				if (json.success) {
+					$('#pagination').pagination(5, json.data.totalPages,
+							localStorage.getItem('pageMaxSize'), handler);
+					handler(1,localStorage.getItem('pageMaxSize'));
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		function handler(pageNumber, pageSize) {
+			var params = {
+				"userId" : sessionStorage.getItem('userId'),
+				"token" : sessionStorage.getItem('token'),
+				"page" : pageNumber - 1,
+				"size" : pageSize
+			}
+			$.post('/admin/findSuggestions', params, function(json) {
+				if (json.success) {
+					var $tbody=$('tbody');
+					$tbody.html('');
+					$.each(json.data.content,function(i,o){
+						var $tr=$('<tr></tr>').append('<td>'+o.user.id+'</td>').append('<td>'+o.user.nickname+'</td>');
+						$tr.append('<td>'+o.content+'</td>').append('<td>'+o.createTime+'</td>');
+						$tbody.append($tr);
+					});
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		$(function() {
+			load();
+		});
+	</script>
+</body>
+</html>

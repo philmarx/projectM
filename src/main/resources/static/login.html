@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css"
+	href="plugins/jquery-easyui-1.5.2/themes/default/easyui.css">
+<link rel="stylesheet" type="text/css" href="plugins/jquery-easyui-1.5.2/themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="plugins/jquery-easyui-1.5.2/demo.css">
+<script type="text/javascript" src="plugins/jquery-easyui-1.5.2/jquery.min.js"></script>
+<script type="text/javascript" src="plugins/jquery-easyui-1.5.2/jquery.easyui.min.js"></script>
+</head>
+<body>
+	<h2>管理员登录</h2>
+	<div style="margin:20px 0;"></div>
+	<div class="easyui-panel" title="登录" style="width:100%;max-width:400px;padding:30px 60px;">
+		<form id="ff" method="post">
+			<div style="margin-bottom:20px">
+				<input class="easyui-textbox" id="username" style="width:100%" data-options="label:'账号',required:true">
+			</div>
+			<div style="margin-bottom:20px">
+				<input class="easyui-passwordbox" id="password" style="width:100%" data-options="label:'密码',required:true">
+			</div>
+		</form>
+		<div style="text-align:center;padding:5px 0">
+			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:80px">登录</a>
+		</div>
+	</div>
+	<script>
+		function submitForm(){
+			var params= {"username":$('#username').val(),"password":$('#password').val()};
+			$.post('/admin/login',params,function(json){
+				if(json.success){
+					sessionStorage.setItem('userId',json.data.id);
+					sessionStorage.setItem('token',json.data.token);
+					sessionStorage.setItem('username',json.data.username);
+					location.href='complaint.html';
+				}else{
+					alert(json.msg);
+				}
+			},'json');
+		}
+	</script>
+</body>
+</html>
