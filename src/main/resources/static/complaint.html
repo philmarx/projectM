@@ -78,7 +78,7 @@ header a:HOVER {
 				"page" : 0,
 				"size" : localStorage.getItem('pageMaxSize')
 			}
-			$.post('/admin/findComplaints', params, function(json) {
+			$.post('admin/findComplaints', params, function(json) {
 				if (json.success) {
 					$('#pagination').pagination(5, json.data.totalPages,
 							localStorage.getItem('pageMaxSize'), handler);
@@ -95,7 +95,7 @@ header a:HOVER {
 				"page" : pageNumber - 1,
 				"size" : pageSize
 			}
-			$.post('/admin/findComplaints', params, function(json) {
+			$.post('admin/findComplaints', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
 					$tbody.html('');

@@ -8,4 +8,6 @@ public interface AdminDao extends JpaRepository<AdminDmo, Long> {
 
 	AdminDmo findByUsernameAndPassword(String username, String password);
 
+	AdminDmo findByUsername(String username);
+
 }

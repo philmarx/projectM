@@ -75,7 +75,7 @@ header a:HOVER {
 			if(!id){
 				return;
 			}
-			$.post('/admin/findUserInfo',{"userId" : sessionStorage.getItem('userId'),"token" : sessionStorage.getItem('token'),"id":id},function(json){
+			$.post('admin/findUserInfo',{"userId" : sessionStorage.getItem('userId'),"token" : sessionStorage.getItem('token'),"id":id},function(json){
 				if(json.success){
 					$('#userId').html(json.data.id);
 					$('#username').html(json.data.nickname);
@@ -90,7 +90,7 @@ header a:HOVER {
 				"size" : localStorage.getItem('pageMaxSize'),
 				"id":sessionStorage.getItem('locationUserId')
 			}
-			$.post('/admin/findLocation', params, function(json) {
+			$.post('admin/findLocation', params, function(json) {
 				if (json.success) {
 					$('#pagination').pagination(5, json.data.totalPages,
 							localStorage.getItem('pageMaxSize'), handler);
@@ -108,7 +108,7 @@ header a:HOVER {
 				"size" : pageSize,
 				"id":sessionStorage.getItem('locationUserId')
 			}
-			$.post('/admin/findLocation', params, function(json) {
+			$.post('admin/findLocation', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
 					$tbody.html('');
@@ -128,7 +128,7 @@ header a:HOVER {
 			}, 'json')
 		}
 		function jieDong(id){
-			$.post('/admin/jieDong',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
+			$.post('admin/jieDong',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
 				if(json.success){
 					$('#tr'+id+'').hide();
 					alert('解冻成功');
@@ -138,7 +138,7 @@ header a:HOVER {
 			},'json');
 		}
 		function fenFa(id){
-			$.post('/admin/fenFa',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
+			$.post('admin/fenFa',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
 				if(json.success){
 					$('#tr'+id+'').hide();
 					alert('分发成功');

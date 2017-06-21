@@ -45,13 +45,14 @@ header a:HOVER {
 				<table class="table table-striped table-hover">
 					<thead>
 						<tr>
-							<th>投诉者ID</th>
-							<th>投诉者姓名</th>
-							<th>被投诉者ID</th>
-							<th>被投诉者姓名</th>
-							<th>房间ID</th>
-							<th>内容</th>
-							<th>投诉时间</th>
+							<th>提现者ID</th>
+							<th>提现者姓名</th>
+							<th>支付宝账号</th>
+							<th>提现金额</th>
+							<th>申请日期</th>
+							<th>处理日期</th>
+							<th>状态</th>
+							<th>处理</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -78,7 +79,7 @@ header a:HOVER {
 				"page" : 0,
 				"size" : localStorage.getItem('pageMaxSize')
 			}
-			$.post('/admin/findWithdrawals', params, function(json) {
+			$.post('admin/findWithdrawals', params, function(json) {
 				if (json.success) {
 					$('#pagination').pagination(5, json.data.totalPages,
 							localStorage.getItem('pageMaxSize'), handler);
@@ -95,12 +96,31 @@ header a:HOVER {
 				"page" : pageNumber - 1,
 				"size" : pageSize
 			}
-			$.post('/admin/findWithdrawals', params, function(json) {
+			$.post('admin/findWithdrawals', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
 					$tbody.html('');
 					$.each(json.data.content,function(i,o){
-						
+						$tr=$('<tr></tr>').append('<td>'+o.user.id+'</td>');
+						$tr.append('<td>'+o.user.realName+'</td>')
+						$tr.append('<td>'+o.alipayAccount+'</td>');
+						$tr.append('<td>'+o.money/100.0+'元</td>');
+						$tr.append('<td>'+o.createTime+'</td>');
+						$tr.append('<td>'+o.dealTime+'</td>');
+						if(o.state==0){
+							$tr.append('<td>待处理</td>');
+						}else if(o.state==1){
+							$tr.append('<td>同意</td>');
+						}else if(o.state==2){
+							$tr.append('<td>拒绝</td>');
+						}else {
+							$tr.append('<td>状态码错误</td>');
+						}
+						var $td=$('<td></td>');
+						$td.append('<a href="javascript:agree('+o.id+')">同意</a>');
+						$td.append('<a href="javascript:disagree('+o.id+')">拒绝</a>');
+						$tr.append($td);
+						$tdody.append($tr);
 					});
 				} else {
 					alert(json.msg);
@@ -110,6 +130,12 @@ header a:HOVER {
 		$(function() {
 			load();
 		});
+		function agree(id){
+			alert(id);
+		}
+		function disagree(id){
+			alert(id);
+		}
 	</script>
 </body>
 </html>

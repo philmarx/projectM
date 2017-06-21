@@ -29,7 +29,7 @@
 	<script>
 		function submitForm(){
 			var params= {"username":$('#username').val(),"password":$('#password').val()};
-			$.post('/admin/login',params,function(json){
+			$.post('admin/login',params,function(json){
 				if(json.success){
 					sessionStorage.setItem('userId',json.data.id);
 					sessionStorage.setItem('token',json.data.token);

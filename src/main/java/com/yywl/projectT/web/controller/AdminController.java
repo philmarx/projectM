@@ -6,6 +6,8 @@ import java.util.concurrent.Callable;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -151,9 +153,14 @@ public class AdminController {
 			if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
 				throw new Exception("用户名或密码不能为空");
 			}
-			AdminDmo admin = this.adminDao.findByUsernameAndPassword(username, MD5Util.getSecurityCode(password));
+			AdminDmo admin = this.adminDao.findByUsername(username);
 			if (admin == null) {
-				throw new Exception("用户名或密码不正确");
+				log.info("用户名不存在");
+				throw new Exception("用户名不存在或密码不正确");
+			}
+			if (!admin.getPassword().equals(MD5Util.getSecurityCode(password))) {
+				log.error("密码不正确");
+				throw new Exception("密码不正确或密码不正确");
 			}
 			admin.setToken(UUID.randomUUID().toString());
 			admin.setExpire(new Date(System.currentTimeMillis() + 15 * 60 * 1000));
@@ -161,6 +168,8 @@ public class AdminController {
 			return new ResultModel(true, "", admin);
 		};
 	}
+
+	private final static Log log = LogFactory.getLog(AdminController.class);
 
 	@PostMapping("findWithdrawals")
 	public Callable<ResultModel> findWithdrawals(long userId, String token, Integer state, int page, int size) {
