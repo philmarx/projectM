@@ -38,7 +38,7 @@ public class WithdrawalsBo {
 		withdrawals.setDealTime(new Date());
 		withdrawals.setState(WithdrawalsEnum.提现成功.ordinal());
 		UserDmo user = withdrawals.getUser();
-		int fee = (int) Math.round(withdrawals.getMoney() * 0.01);
+		int fee = (int) Math.round(withdrawals.getMoney() * 0.02);
 		withdrawals.setDealMoney(withdrawals.getMoney() - fee);
 		user.setLockAmount(user.getLockAmount() - withdrawals.getMoney());
 		withdrawalsDao.save(withdrawals);

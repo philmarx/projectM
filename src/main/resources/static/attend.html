@@ -50,6 +50,7 @@ header a:HOVER {
 							<th>房间ID</th>
 							<th>经度</th>
 							<th>纬度</th>
+							<th>状态</th>
 							<th>操作</th>
 						</tr>
 					</thead>
@@ -94,6 +95,8 @@ header a:HOVER {
 				"page" : pageNumber - 1,
 				"size" : pageSize
 			}
+			sessionStorage.setItem('pageNumber',pageNumber);
+			sessionStorage.setItem('pageSize',pageSize);
 			$.post('admin/findAttend', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
@@ -102,7 +105,19 @@ header a:HOVER {
 						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.member.id+'</td>').append('<td>'+o.member.nickname+'</td>');
 						$tr.append('<td>'+o.room.id+'</td>');
 						$tr.append('<td>'+o.longitude+'</td>').append('<td>'+o.latitude+'</td>');
-						$tr.append('<td><a href="javascript:findLocation('+o.member.id+')" style="margin-right:1em;margin-left:1em;">查看位置</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
+						if(o.dealState==0){
+							$tr.append('<td>待处理</td>');
+							$tr.append('<td><a href="javascript:findLocation('+o.member.id+')">查看位置</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
+						}else if(o.dealState==1){
+							$tr.append('<td>分发</td>');
+							$tr.append('<td>已处理</td>')
+						}else if(o.dealState==2){
+							$tr.append('<td>返回</td>');
+							$tr.append('<td>已处理</td>')
+						}else{
+							$tr.append('<td>错误</td>');
+							$tr.append('<td>已处理</td>')
+						}
 						$tbody.append($tr);
 					});
 				} else {
@@ -113,7 +128,7 @@ header a:HOVER {
 		function jieDong(id){
 			$.post('admin/jieDong',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
 				if(json.success){
-					$('#tr'+id+'').hide();
+					handler(sessionStorage.getItem('pageNumber'),sessionStorage.getItem('pageSize'));
 					alert('解冻成功');
 				}else{
 					alert(json.msg);
@@ -123,7 +138,7 @@ header a:HOVER {
 		function fenFa(id){
 			$.post('admin/fenFa',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
 				if(json.success){
-					$('#tr'+id+'').hide();
+					handler(sessionStorage.getItem('pageNumber'),sessionStorage.getItem('pageSize'));
 					alert('分发成功');
 				}else{
 					alert(json.msg);

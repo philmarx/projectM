@@ -8,6 +8,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.yywl.projectT.bean.RoomRequestNotLateState;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;
@@ -54,7 +55,7 @@ public class AdminBo {
 	public void fenFa(long id) throws Exception {
 		long currentTime = System.currentTimeMillis();
 		RoomMemberDmo rm = this.roomMemberDao.findOne(id);
-		if (rm.isDeal()) {
+		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
 			throw new Exception("已处理");
 		}
 		List<RoomMemberDmo> roomMembers = this.roomMemberDao
@@ -62,7 +63,7 @@ public class AdminBo {
 		if (roomMembers.isEmpty()) {
 			return;
 		}
-		rm.setDeal(true);
+		rm.setDealState(RoomRequestNotLateState.分发.ordinal());
 		RoomDmo room = rm.getRoom();
 		int money = room.getMoney();
 		UserDmo user = rm.getMember();
@@ -93,7 +94,7 @@ public class AdminBo {
 	@Transactional(rollbackOn = Throwable.class)
 	public void jieDong(long id) throws Exception {
 		RoomMemberDmo rm = this.roomMemberDao.findOne(id);
-		if (rm.isDeal()) {
+		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
 			throw new Exception("已处理");
 		}
 		int money = rm.getRoom().getMoney();
@@ -107,7 +108,7 @@ public class AdminBo {
 		tran.setMoney(money);
 		tran.setUser(user);
 		this.transactionDetailsDao.save(tran);
-		rm.setDeal(true);
+		rm.setDealState(RoomRequestNotLateState.返回.ordinal());
 		roomMemberDao.save(rm);
 
 	}

@@ -56,7 +56,7 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	List<RoomMemberDmo> findByRoom_IdOrderByPointDesc(long roomId);
 
-	Page<RoomMemberDmo> findByRequestNotLateAndIsAttendAndIsDeal(boolean b, boolean c, boolean d,
+	Page<RoomMemberDmo> findByRequestNotLateAndIsAttend(boolean b, boolean c,
 			Pageable pageRequest);
 
 	List<RoomMemberDmo> findByRoom_IdAndMember_IdNotAndIsSigned(Long roomId, Long memberId, boolean isSigned);

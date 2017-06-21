@@ -96,6 +96,8 @@ header a:HOVER {
 				"page" : pageNumber - 1,
 				"size" : pageSize
 			}
+			sessionStorage.setItem('pageNumber',pageNumber);
+			sessionStorage.setItem('pageSize',pageSize);
 			$.post('admin/findWithdrawals', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
@@ -109,18 +111,22 @@ header a:HOVER {
 						$tr.append('<td>'+o.dealTime+'</td>');
 						if(o.state==0){
 							$tr.append('<td>待处理</td>');
+							var $td=$('<td></td>');
+							$td.append('<a href="javascript:agree('+o.id+')">同意</a>');
+							$td.append('<a href="javascript:disagree('+o.id+')"  style="margin-right:1em;margin-left:1em;">拒绝</a>');
+							$tr.append($td);
 						}else if(o.state==1){
 							$tr.append('<td>同意</td>');
+							$tr.append('<td>已处理</td>');
 						}else if(o.state==2){
 							$tr.append('<td>拒绝</td>');
+							$tr.append('<td>已处理</td>');
 						}else {
 							$tr.append('<td>状态码错误</td>');
+							$tr.append('<td>已处理</td>');
 						}
-						var $td=$('<td></td>');
-						$td.append('<a href="javascript:agree('+o.id+')">同意</a>');
-						$td.append('<a href="javascript:disagree('+o.id+')">拒绝</a>');
-						$tr.append($td);
-						$tdody.append($tr);
+						
+						$tbody.append($tr);
 					});
 				} else {
 					alert(json.msg);
@@ -138,6 +144,7 @@ header a:HOVER {
 				}
 			$.post('withdrawals/agree',params,function(json){
 				if (json.success) {
+					handler(sessionStorage.getItem('pageNumber'),sessionStorage.getItem('pageSize'));
 					alert('操作成功');
 				}else{
 					alert(json.msg);
@@ -152,6 +159,7 @@ header a:HOVER {
 				}
 			$.post('withdrawals/disagree',params,function(json){
 				if (json.success) {
+					handler(sessionStorage.getItem('pageNumber'),sessionStorage.getItem('pageSize'));
 					alert('操作成功');
 				}else{
 					alert(json.msg);

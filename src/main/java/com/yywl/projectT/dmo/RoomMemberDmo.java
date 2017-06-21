@@ -31,30 +31,80 @@ public class RoomMemberDmo implements Serializable{
 	 */
 	private boolean requestNotLate;
 	
+	/**
+	 * 是否出席
+	 */
+	private boolean isAttend;
+
+	/**
+	 * 是否签到过
+	 */
+	private boolean isSigned;
+
+	@ManyToOne
+	@JoinColumn(name="game")
+	private GameDmo game;
+	
+	private int result=0;
+	
+	private int point=0;
+
+	private boolean ready;
+
+	private double longitude=0;
+
+	private double latitude=0;
+
+
+
+	/**
+	 * 请求未迟到是否处理
+	 */
+	private int dealState=0;
+
+	/**
+	 * 是否已评价过
+	 */
+	private boolean isEvaluated=false;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public RoomDmo getRoom() {
+		return room;
+	}
+
+	public void setRoom(RoomDmo room) {
+		this.room = room;
+	}
+
+	public UserDmo getMember() {
+		return member;
+	}
+
+	public void setMember(UserDmo member) {
+		this.member = member;
+	}
+
+	public String getNickname() {
+		return nickname;
+	}
+
+	public void setNickname(String nickname) {
+		this.nickname = nickname;
+	}
+
 	public boolean isRequestNotLate() {
 		return requestNotLate;
 	}
 
 	public void setRequestNotLate(boolean requestNotLate) {
 		this.requestNotLate = requestNotLate;
-	}
-
-	/**
-	 * 是否出席
-	 */
-	private boolean isAttend;
-	
-	/**
-	 * 是否签到过
-	 */
-	private boolean isSigned;
-	
-	public boolean isSigned() {
-		return isSigned;
-	}
-
-	public void setSigned(boolean isSigned) {
-		this.isSigned = isSigned;
 	}
 
 	public boolean isAttend() {
@@ -65,45 +115,44 @@ public class RoomMemberDmo implements Serializable{
 		this.isAttend = isAttend;
 	}
 
-
-
-	@ManyToOne
-	@JoinColumn(name="game")
-	private GameDmo game;
-
-	private int result=0;
-	
-	private int point=0;
-	
-	private boolean ready;
-	
-	private double longitude=0;
-	
-	private double latitude=0;
-	/**
-	 * 请求未迟到是否处理
-	 */
-	private boolean isDeal;
-	
-	public boolean isDeal() {
-		return isDeal;
+	public boolean isSigned() {
+		return isSigned;
 	}
 
-	public void setDeal(boolean isDeal) {
-		this.isDeal = isDeal;
+	public void setSigned(boolean isSigned) {
+		this.isSigned = isSigned;
 	}
 
-	/**
-	 * 是否已评价过
-	 */
-	private boolean isEvaluated=false;
-	
-	public boolean isEvaluated() {
-		return isEvaluated;
+	public GameDmo getGame() {
+		return game;
 	}
 
-	public void setEvaluated(boolean isEvaluated) {
-		this.isEvaluated = isEvaluated;
+	public void setGame(GameDmo game) {
+		this.game = game;
+	}
+
+	public int getResult() {
+		return result;
+	}
+
+	public void setResult(int result) {
+		this.result = result;
+	}
+
+	public int getPoint() {
+		return point;
+	}
+
+	public void setPoint(int point) {
+		this.point = point;
+	}
+
+	public boolean isReady() {
+		return ready;
+	}
+
+	public void setReady(boolean ready) {
+		this.ready = ready;
 	}
 
 	public double getLongitude() {
@@ -122,63 +171,26 @@ public class RoomMemberDmo implements Serializable{
 		this.latitude = latitude;
 	}
 
+	public int getDealState() {
+		return dealState;
+	}
+
+	public void setDealState(int dealState) {
+		this.dealState = dealState;
+	}
+
+	public boolean isEvaluated() {
+		return isEvaluated;
+	}
+
+	public void setEvaluated(boolean isEvaluated) {
+		this.isEvaluated = isEvaluated;
+	}
+
 	public RoomMemberDmo() {
 		super();
 	}
-
-	public GameDmo getGame() {
-		return game;
-	}
-
-	public Long getId() {
-		return id;
-	}
 	
-	public UserDmo getMember() {
-		return member;
-	}
-
-	public String getNickname() {
-		return nickname;
-	}
-	public Integer getPoint() {
-		return point;
-	}
-	public Boolean getReady() {
-		return ready;
-	}
-	public Integer getResult() {
-		return result;
-	}
-	
-	public RoomDmo getRoom() {
-		return this.room;
-	}
-	public void setGame(GameDmo game) {
-		this.game = game;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public void setMember(UserDmo member) {
-		this.member = member;
-	}
-	public void setNickname(String nickname) {
-		this.nickname = nickname;
-	}
-	public void setPoint(Integer point) {
-		this.point = point;
-	}
-	public void setReady(Boolean ready) {
-		this.ready = ready;
-	}
-	public void setResult(Integer result) {
-		this.result = result;
-	}
-	
-	public void setRoom(RoomDmo room) {
-		this.room = room;
-	}
 	
 	
 
