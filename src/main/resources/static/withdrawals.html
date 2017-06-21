@@ -131,10 +131,32 @@ header a:HOVER {
 			load();
 		});
 		function agree(id){
-			alert(id);
+			var params = {
+					"userId" : sessionStorage.getItem('userId'),
+					"token" : sessionStorage.getItem('token'),
+					"id" :id
+				}
+			$.post('withdrawals/agree',params,function(json){
+				if (json.success) {
+					alert('操作成功');
+				}else{
+					alert(json.msg);
+				}
+			},'json')
 		}
 		function disagree(id){
-			alert(id);
+			var params = {
+					"userId" : sessionStorage.getItem('userId'),
+					"token" : sessionStorage.getItem('token'),
+					"id" :id
+				}
+			$.post('withdrawals/disagree',params,function(json){
+				if (json.success) {
+					alert('操作成功');
+				}else{
+					alert(json.msg);
+				}
+			},'json')
 		}
 	</script>
 </body>
