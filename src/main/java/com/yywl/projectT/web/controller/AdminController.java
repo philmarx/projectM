@@ -84,8 +84,8 @@ public class AdminController {
 	public Callable<ResultModel> findAttend(long userId, String token, int page, int size) {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
-			Page<RoomMemberDmo> roomMembers = this.roomMemberDao.findByRequestNotLateAndIsAttend(true, false,
-					 new PageRequest(page, size));
+			Page<RoomMemberDmo> roomMembers = this.roomMemberDao.findByRequestNotLate(true,
+					new PageRequest(page, size));
 			return new ResultModel(true, null, roomMembers);
 		};
 	}

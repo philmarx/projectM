@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -56,10 +57,9 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	List<RoomMemberDmo> findByRoom_IdOrderByPointDesc(long roomId);
 
-	Page<RoomMemberDmo> findByRequestNotLateAndIsAttend(boolean b, boolean c,
-			Pageable pageRequest);
-
 	List<RoomMemberDmo> findByRoom_IdAndMember_IdNotAndIsSigned(Long roomId, Long memberId, boolean isSigned);
+
+	Page<RoomMemberDmo> findByRequestNotLate(boolean b, Pageable pageRequest);
 
 
 }

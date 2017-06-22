@@ -58,6 +58,7 @@ public class AdminBo {
 		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
 			throw new Exception("已处理");
 		}
+		rm.setLockMoney(false);
 		List<RoomMemberDmo> roomMembers = this.roomMemberDao
 				.findByRoom_IdAndMember_IdNotAndIsSigned(rm.getRoom().getId(), rm.getMember().getId(), true);
 		if (roomMembers.isEmpty()) {
@@ -89,6 +90,7 @@ public class AdminBo {
 		}
 		room.setRemainingMoney(money - addMoney * roomMembers.size());
 		this.roomDao.save(room);
+		this.roomMemberDao.save(rm);
 	}
 
 	@Transactional(rollbackOn = Throwable.class)
@@ -109,6 +111,7 @@ public class AdminBo {
 		tran.setUser(user);
 		this.transactionDetailsDao.save(tran);
 		rm.setDealState(RoomRequestNotLateState.返回.ordinal());
+		rm.setLockMoney(false);
 		roomMemberDao.save(rm);
 
 	}

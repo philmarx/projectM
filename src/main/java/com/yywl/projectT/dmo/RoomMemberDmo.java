@@ -2,6 +2,7 @@ package com.yywl.projectT.dmo;
 
 import java.io.Serializable;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,28 +10,40 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+
 @Entity
-@Table(name="room_member")
-public class RoomMemberDmo implements Serializable{
+@Table(name = "room_member")
+public class RoomMemberDmo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	@ManyToOne
-	@JoinColumn(name="room")
+	@JoinColumn(name = "room")
 	private RoomDmo room;
 	@ManyToOne
-	@JoinColumn(name="member")
+	@JoinColumn(name = "member")
 	private UserDmo member;
-	
+
 	private String nickname;
 	
+	@Column(name = "is_lock_money")
+	private boolean isLockMoney = false;
+
+	public boolean isLockMoney() {
+		return isLockMoney;
+	}
+
+	public void setLockMoney(boolean isLockMoney) {
+		this.isLockMoney = isLockMoney;
+	}
+
 	/**
 	 * 请求没有迟到
 	 */
 	private boolean requestNotLate;
-	
+
 	/**
 	 * 是否出席
 	 */
@@ -42,30 +55,28 @@ public class RoomMemberDmo implements Serializable{
 	private boolean isSigned;
 
 	@ManyToOne
-	@JoinColumn(name="game")
+	@JoinColumn(name = "game")
 	private GameDmo game;
-	
-	private int result=0;
-	
-	private int point=0;
+
+	private int result = 0;
+
+	private int point = 0;
 
 	private boolean ready;
 
-	private double longitude=0;
+	private double longitude = 0;
 
-	private double latitude=0;
-
-
+	private double latitude = 0;
 
 	/**
 	 * 请求未迟到是否处理
 	 */
-	private int dealState=0;
+	private int dealState = 0;
 
 	/**
 	 * 是否已评价过
 	 */
-	private boolean isEvaluated=false;
+	private boolean isEvaluated = false;
 
 	public Long getId() {
 		return id;
@@ -190,8 +201,5 @@ public class RoomMemberDmo implements Serializable{
 	public RoomMemberDmo() {
 		super();
 	}
-	
-	
-	
 
 }
