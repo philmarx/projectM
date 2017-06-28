@@ -7,7 +7,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.yywl.projectT.bean.WithdrawalsEnum;
+import com.yywl.projectT.bean.enums.WithdrawalsEnum;
 import com.yywl.projectT.dao.TransactionDetailsDao;
 import com.yywl.projectT.dao.UserDao;
 import com.yywl.projectT.dao.WithdrawalsDao;

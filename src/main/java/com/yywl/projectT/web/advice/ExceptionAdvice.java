@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
-import com.yywl.projectT.core.ResultModel;
+import com.yywl.projectT.bean.ResultModel;
 
 
 @ControllerAdvice

@@ -5,7 +5,8 @@ import java.util.Set;
 
 import org.springframework.util.StringUtils;
 
-import com.yywl.projectT.core.Formatter;
+import com.yywl.projectT.bean.Formatter;
+import com.yywl.projectT.dao.JdbcDao;
 
 public class UserVo {
 	private Long id;

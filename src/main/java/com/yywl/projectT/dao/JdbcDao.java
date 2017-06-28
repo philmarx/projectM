@@ -3,10 +3,14 @@ package com.yywl.projectT.dao;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Random;
+
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
 import com.yywl.projectT.bean.RandomLabels;
 import com.yywl.projectT.dmo.RoomDmo;
 import com.yywl.projectT.vo.HomeRoomVo.UserVo;
@@ -34,7 +38,7 @@ public class JdbcDao {
 		return labels;
 	}
 
-	@Autowired
+	@PersistenceContext
 	EntityManager entityManager;
 
 	public List<UserForEvaluatingVo> findFriendsToEvalute(long userId, long roomId) {
@@ -51,12 +55,12 @@ public class JdbcDao {
 					rs.getString("avatar_signature"));
 			userVo.setPoint(rs.getInt("point"));
 			userVo.setScoring(isScoring);
-			userVo.getLabels().add(RandomLabels.labels[new Random().nextInt(RandomLabels.labels.length)]);
-			userVo.getLabels().add(RandomLabels.labels[new Random().nextInt(RandomLabels.labels.length)]);
-			userVo.getLabels().add(RandomLabels.labels[new Random().nextInt(RandomLabels.labels.length)]);
-			userVo.getLabels().add(RandomLabels.labels[new Random().nextInt(RandomLabels.labels.length)]);
-			userVo.getLabels().add(RandomLabels.labels[new Random().nextInt(RandomLabels.labels.length)]);
-			userVo.getLabels().add(RandomLabels.labels[new Random().nextInt(RandomLabels.labels.length)]);
+			userVo.getLabels().add(RandomLabels.LABELS[new Random().nextInt(RandomLabels.LABELS.length)]);
+			userVo.getLabels().add(RandomLabels.LABELS[new Random().nextInt(RandomLabels.LABELS.length)]);
+			userVo.getLabels().add(RandomLabels.LABELS[new Random().nextInt(RandomLabels.LABELS.length)]);
+			userVo.getLabels().add(RandomLabels.LABELS[new Random().nextInt(RandomLabels.LABELS.length)]);
+			userVo.getLabels().add(RandomLabels.LABELS[new Random().nextInt(RandomLabels.LABELS.length)]);
+			userVo.getLabels().add(RandomLabels.LABELS[new Random().nextInt(RandomLabels.LABELS.length)]);
 			return userVo;
 		});
 		return vos;

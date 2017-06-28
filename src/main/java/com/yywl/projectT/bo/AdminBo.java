@@ -8,7 +8,7 @@ import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.yywl.projectT.bean.RoomRequestNotLateState;
+import com.yywl.projectT.bean.enums.*;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;

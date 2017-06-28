@@ -7,9 +7,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bo.AdminBo;
 import com.yywl.projectT.bo.WithdrawalsBo;
-import com.yywl.projectT.core.ResultModel;
 
 @RestController
 @RequestMapping("withdrawals")

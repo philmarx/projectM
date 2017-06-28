@@ -12,7 +12,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.yywl.projectT.bean.JsonUtils;
+import com.yywl.projectT.bean.Formatter;
 
 @Entity
 @Table(name = "user")
@@ -113,7 +113,7 @@ public class UserDmo implements Serializable {
 
 	public Set<String> getLabels() {
 		@SuppressWarnings("unchecked")
-		Set<String> list = JsonUtils.gson.fromJson(labels, Set.class);
+		Set<String> list = Formatter.gson.fromJson(labels, Set.class);
 		return list == null ? new HashSet<String>() : list;
 	}
 
@@ -191,7 +191,7 @@ public class UserDmo implements Serializable {
 	}
 
 	public void setLabels(Set<String> labels) {
-		this.labels = JsonUtils.gson.toJson(labels);
+		this.labels = Formatter.gson.toJson(labels);
 	}
 
 	public void setLockAmount(Integer lockAmount) {

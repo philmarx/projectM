@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.yywl.projectT.bean.MD5Util;
+import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bean.ValidatorBean;
 import com.yywl.projectT.bo.AdminBo;
-import com.yywl.projectT.core.MD5Util;
-import com.yywl.projectT.core.ResultModel;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.ComplaintDao;
 import com.yywl.projectT.dao.LocationDao;

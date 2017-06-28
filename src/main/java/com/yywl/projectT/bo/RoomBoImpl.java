@@ -6,8 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import com.yywl.projectT.core.Formatter;
-import com.yywl.projectT.core.Keys;
+import com.yywl.projectT.bean.Keys;
 import com.yywl.projectT.dao.GameDao;
 import com.yywl.projectT.dao.GameScoreDao;
 import com.yywl.projectT.dao.JdbcDao;
@@ -26,9 +25,6 @@ public class RoomBoImpl implements RoomBo {
 	@Autowired
 	RoomMemberDao roomMemberDao;
 
-
-	@Autowired
-	Formatter formatter;
 
 	@Autowired
 	GameDao gameDao;
