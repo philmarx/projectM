@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,21 +24,27 @@ import com.yywl.projectT.dmo.UserDmo;
 
 @Service
 public class AdminBo {
+	
+	private final static Log log=LogFactory.getLog(AdminBo.class);
 	@Autowired
 	AdminDao adminDao;
 
 	public AdminDmo loginByToken(long userId, String token) throws Exception {
 		AdminDmo admin = this.adminDao.findOne(userId);
 		if (admin == null) {
+			log.error("用户不存在");
 			throw new Exception("用户不存在");
 		}
 		if (!admin.getToken().equals(token)) {
+			log.error("请重新登录");
 			throw new Exception("请重新登录");
 		}
 		if (admin.getExpire() == null) {
+			log.error("登录超时");
 			throw new Exception("登录超时");
 		}
 		if (new Date().after(admin.getExpire())) {
+			log.error("登录超时");
 			throw new Exception("登录超时");
 		}
 		return admin;
@@ -56,6 +64,7 @@ public class AdminBo {
 		long currentTime = System.currentTimeMillis();
 		RoomMemberDmo rm = this.roomMemberDao.findOne(id);
 		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
+			log.error("已处理");
 			throw new Exception("已处理");
 		}
 		rm.setLockMoney(false);
@@ -97,6 +106,7 @@ public class AdminBo {
 	public void jieDong(long id) throws Exception {
 		RoomMemberDmo rm = this.roomMemberDao.findOne(id);
 		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
+			log.error("已处理");
 			throw new Exception("已处理");
 		}
 		int money = rm.getRoom().getMoney();

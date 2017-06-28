@@ -8,7 +8,7 @@ public class Keys {
 	/**
 	 * 默认端口
 	 */
-	public static final int SERVER_PORT = 9000;
+	public static final int SERVER_PORT = 9001;
 
 	/**
 	 * 每页最多显示行数

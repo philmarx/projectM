@@ -105,6 +105,7 @@ public class AdminController {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
 			if (id == null) {
+				log.error("用户不存在");
 				throw new Exception("用户不存在");
 			}
 			Pageable pageable = new PageRequest(page, size, Direction.DESC, "sendTime");
@@ -128,6 +129,7 @@ public class AdminController {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
 			if (id == null) {
+				log.error("用户不存在");
 				throw new Exception("用户不存在");
 			}
 			return new ResultModel(true, null, this.userDao.findOne(id));
@@ -151,6 +153,7 @@ public class AdminController {
 	public Callable<ResultModel> login(String username, String password) {
 		return () -> {
 			if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
+				log.error("用户名或密码不能为空");
 				throw new Exception("用户名或密码不能为空");
 			}
 			AdminDmo admin = this.adminDao.findByUsername(username);

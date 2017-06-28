@@ -8,6 +8,7 @@ public class IndexController {
 	
 	@RequestMapping("/")
 	public String login() {
+		//login.html在resources/static下
 		return "login.html";
 	}
 }

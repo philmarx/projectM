@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.transaction.Transactional;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,15 +26,19 @@ public class WithdrawalsBo {
 	@Autowired
 	TransactionDetailsDao transactionDetailsDao;
 
+	private static final Log log=LogFactory.getLog(WithdrawalsBo.class);
+	
 	@Autowired
 	WithdrawalsDao withdrawalsDao;
 
 	public void agree(long id) throws Exception {
 		WithdrawalsDmo withdrawals = this.withdrawalsDao.findOne(id);
 		if (withdrawals == null) {
+			log.error("订单不存在");
 			throw new Exception("订单不存在");
 		}
 		if (withdrawals.getState()!=WithdrawalsEnum.处理中.ordinal()) {
+			log.error("该订单已处理");
 			throw new Exception("该订单已处理");
 		}
 		withdrawals.setDealTime(new Date());
@@ -62,9 +68,11 @@ public class WithdrawalsBo {
 	public void disagree(long id) throws Exception {
 		WithdrawalsDmo withdrawals = this.withdrawalsDao.findOne(id);
 		if (withdrawals == null) {
+			log.error("订单不存在");
 			throw new Exception("订单不存在");
 		}
 		if (withdrawals.getState()!=WithdrawalsEnum.处理中.ordinal()) {
+			log.error("该订单已处理");
 			throw new Exception("该订单已处理");
 		}
 		withdrawals.setDealTime(new Date());
