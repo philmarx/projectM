@@ -54,6 +54,7 @@ public class WithdrawalsBo {
 		tran1.setDescription("支付宝提现");
 		tran1.setMoney(0-withdrawals.getDealMoney());
 		tran1.setUser(user);
+		tran1.setCalc(false);
 		transactionDetailsDao.save(tran1);
 		if (fee!=0) {
 			TransactionDetailsDmo tran2 = new TransactionDetailsDmo();
@@ -61,6 +62,7 @@ public class WithdrawalsBo {
 			tran2.setDescription("支付宝提现收取服务费");
 			tran2.setMoney(0-fee);
 			tran2.setUser(user);
+			tran2.setCalc(false);
 			transactionDetailsDao.save(tran2);
 		}
 	}

@@ -1,6 +1,7 @@
 package com.yywl.projectT.dmo;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,6 +11,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.yywl.projectT.bean.Formatter;
@@ -72,7 +75,17 @@ public class UserDmo implements Serializable {
 	private String labels;
 
 	private String avatarSignature="";
+	
+	@Temporal(TemporalType.DATE)
+	private Date birthday;
 
+	public Date getBirthday() {
+		return birthday;
+	}
+
+	public void setBirthday(Date birthday) {
+		this.birthday = birthday;
+	}
 	public UserDmo() {
 		super();
 	}

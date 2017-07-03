@@ -37,49 +37,58 @@ public class TransactionDetailsDmo implements Serializable{
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
 	private Date createTime;
 	
+	private boolean isCalc=true;
 	
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
 	public TransactionDetailsDmo() {
 		super();
 	}
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public UserDmo getUser() {
-		return user;
-	}
-
-	public void setUser(UserDmo user) {
-		this.user = user;
-	}
-
-	public int getMoney() {
-		return money;
-	}
-
-	public void setMoney(int money) {
-		this.money = money;
+	public Date getCreateTime() {
+		return createTime;
 	}
 
 	public String getDescription() {
 		return description;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
+	public int getMoney() {
+		return money;
+	}
+
+	public UserDmo getUser() {
+		return user;
+	}
+
+	public boolean isCalc() {
+		return isCalc;
+	}
+
+	public void setCalc(boolean isCalc) {
+		this.isCalc = isCalc;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public void setMoney(int money) {
+		this.money = money;
+	}
+
+	public void setUser(UserDmo user) {
+		this.user = user;
 	}
 	
 	
