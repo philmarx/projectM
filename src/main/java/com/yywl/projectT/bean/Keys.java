@@ -4,7 +4,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class Keys {
-
+	/**
+	 * 后台管理员用户名
+	 */
+	public static final String ADMIN_NAME="tomeetadmin";
+	
+	/**
+	 * 后台管理员密码
+	 */
+	public static final String ADMIN_PASSWORD="EASE888net!!!";
+	
 	/**
 	 * 默认端口
 	 */
@@ -16,19 +25,9 @@ public class Keys {
 	public static final int PAGE_MAX_SIZE = 50;
 
 	/**
-	 * 发送小纸条提升好感度
-	 */
-	public static final double NOTE_ADD_FRIEND_POINT = 0.2;
-	/**
 	 * 查看排行榜显示的数量
 	 */
 	public static final int ORDER_SIZE = 15;
-
-	public static class DruidConfig{
-		public final static String username="tommet";
-		public final static String password="tommet-druid";
-		public final static String allow="218.108.228.117";
-	}
 	
 	/**
 	 * 房间万能密码
@@ -87,8 +86,8 @@ public class Keys {
 		public final static String APP_SECRET = "WVXvhJkK8hBqL5";
 
 		// 开发环境
-		// public final static String APP_KEY = "mgb7ka1nmvikg";
-		// public final static String APP_SECRET = "fmnAt5ZeMPdp";
+		//public final static String APP_KEY = "mgb7ka1nmvikg";
+		//public final static String APP_SECRET = "fmnAt5ZeMPdp";
 
 		public final static String CMD_MSG_REFRESH_ROOM = "refreshRoom";
 		public final static String CMD_MSG_ROOM_DISSOLVE = "roomDissolve";

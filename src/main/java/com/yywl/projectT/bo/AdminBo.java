@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.yywl.projectT.bean.Keys;
 import com.yywl.projectT.bean.enums.*;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.RoomDao;
@@ -73,6 +74,7 @@ public class AdminBo {
 		if (roomMembers.isEmpty()) {
 			return;
 		}
+		String roomName=rm.getRoom().getName();
 		rm.setDealState(RoomRequestNotLateState.分发.ordinal());
 		RoomDmo room = rm.getRoom();
 		int money = room.getMoney();
@@ -81,7 +83,7 @@ public class AdminBo {
 		userDao.save(user);
 		TransactionDetailsDmo tran = new TransactionDetailsDmo();
 		tran.setCreateTime(new Date(currentTime));
-		tran.setDescription("后台处理，活动结束，因缺席扣除保证金。");
+		tran.setDescription("【"+roomName+"】迟到，扣除保证金");
 		tran.setUser(user);
 		tran.setMoney(0 - money);
 		transactionDetailsDao.save(tran);
@@ -90,14 +92,16 @@ public class AdminBo {
 			UserDmo member = roomMemberDmo.getMember();
 			TransactionDetailsDmo tranDmo = new TransactionDetailsDmo();
 			tranDmo.setCreateTime(new Date(currentTime));
-			tranDmo.setDescription("后台处理，活动结束，分得保证金。");
+			tranDmo.setDescription("【"+roomName+"】结束，分得保证金");
 			tranDmo.setUser(member);
-			tranDmo.setMoney(money);
-			transactionDetailsDao.save(tran);
+			tranDmo.setMoney(addMoney);
+			transactionDetailsDao.save(tranDmo);
 			member.setAmount(member.getAmount() + addMoney);
 			userDao.save(member);
 		}
 		room.setRemainingMoney(money - addMoney * roomMembers.size());
+		UserDmo systemUser=this.userDao.findOne(Keys.SYSTEM_ID);
+		systemUser.setAmount(systemUser.getAmount()+room.getRemainingMoney());
 		this.roomDao.save(room);
 		this.roomMemberDao.save(rm);
 	}
@@ -116,14 +120,13 @@ public class AdminBo {
 		this.userDao.save(user);
 		TransactionDetailsDmo tran = new TransactionDetailsDmo();
 		tran.setCreateTime(new Date());
-		tran.setDescription("后台处理，解冻保证金。");
+		tran.setDescription("【"+rm.getRoom().getName()+"】结束，解冻保证金");
 		tran.setMoney(money);
 		tran.setUser(user);
 		this.transactionDetailsDao.save(tran);
 		rm.setDealState(RoomRequestNotLateState.返回.ordinal());
 		rm.setLockMoney(false);
 		roomMemberDao.save(rm);
-
 	}
 
 }

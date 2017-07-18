@@ -29,6 +29,16 @@ public class LocationDmo implements Serializable{
 	@JoinColumn(name="user_id")
 	private UserDmo user;
 	
+	private String ip;
+	
+	
+	
+	public String getIp() {
+		return ip;
+	}
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
 	private double longitude;
 	
 	private double latitude;
@@ -79,8 +89,9 @@ public class LocationDmo implements Serializable{
 	public void setSendTime(Date sendTime) {
 		this.sendTime = sendTime;
 	}
-	public LocationDmo(Long id, UserDmo user, double longitude, double latitude, Date sendTime) {
+	public LocationDmo(Long id, UserDmo user, double longitude, double latitude, Date sendTime,String ip) {
 		super();
+		this.ip=ip;
 		this.id = id;
 		this.user = user;
 		this.longitude = longitude;

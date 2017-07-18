@@ -15,7 +15,7 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 	List<RoomMemberDmo> findByRoom_Id(Long roomId);
 
 	RoomMemberDmo findByMember_IdAndRoom_Id(Long memberId, Long roomId);
-	
+
 	boolean existsByRoom_IdAndResult(long roomId, int result);
 
 	int countByRoom_Id(Long roomId);
@@ -38,9 +38,8 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	List<RoomMemberDmo> findByRoom_IdNotAndMember_IdAndReady(long roomId, long userId, boolean ready);
 
-	List<RoomMemberDmo> findByRoom_IdAndMember_IdNotAndReadyAndMember_AmountGreaterThanEqual(Long roomId,
-			Long userId, boolean ready, int roomMoney);
-
+	List<RoomMemberDmo> findByRoom_IdAndMember_IdNotAndReadyAndMember_AmountGreaterThanEqual(Long roomId, Long userId,
+			boolean ready, int roomMoney);
 
 	List<RoomMemberDmo> findByMember_Id(long l);
 
@@ -60,5 +59,6 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	Page<RoomMemberDmo> findByRequestNotLate(boolean b, Pageable pageRequest);
 
+	Page<RoomMemberDmo> findByRequestNotLateAndIsSigned(boolean b, boolean c, Pageable pageRequest);
 
 }

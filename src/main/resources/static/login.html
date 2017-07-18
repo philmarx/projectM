@@ -3,42 +3,59 @@
 <head>
 <title>后会有期后台管理</title>
 <meta charset="UTF-8">
+<script type="text/javascript" src="plugins/jquery1.11.3.min.js"></script>
 <link rel="stylesheet" type="text/css"
-	href="plugins/jquery-easyui-1.5.2/themes/default/easyui.css">
-<link rel="stylesheet" type="text/css" href="plugins/jquery-easyui-1.5.2/themes/icon.css">
-	<link rel="stylesheet" type="text/css" href="plugins/jquery-easyui-1.5.2/demo.css">
-<script type="text/javascript" src="plugins/jquery-easyui-1.5.2/jquery.min.js"></script>
-<script type="text/javascript" src="plugins/jquery-easyui-1.5.2/jquery.easyui.min.js"></script>
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
-	<h2>管理员登录</h2>
-	<div style="margin:20px 0;"></div>
-	<div class="easyui-panel" title="登录" style="width:100%;max-width:400px;padding:30px 60px;">
-		<form id="ff" method="post">
-			<div style="margin-bottom:20px">
-				<input class="easyui-textbox" id="username" style="width:100%" data-options="label:'账号',required:true">
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-4"></div>
+			<div class="col-xs-4">
+				<h3>后会有期后台管理系统</h3>
+				<form>
+					<div class="form-group">
+						<label for="username">用户名</label> <input class="form-control"
+							id="username" placeholder="用户名">
+					</div>
+					<div class="form-group">
+						<label for="password">密&nbsp;码</label> <input type="password"
+							class="form-control" id="password" placeholder="密码">
+					</div>
+					<button type="button" class="btn btn-default"
+						onclick="submitForm()">登录</button>
+				</form>
 			</div>
-			<div style="margin-bottom:20px">
-				<input class="easyui-passwordbox" id="password" style="width:100%" data-options="label:'密码',required:true">
-			</div>
-		</form>
-		<div style="text-align:center;padding:5px 0">
-			<a href="javascript:void(0)" class="easyui-linkbutton" onclick="submitForm()" style="width:80px">登录</a>
+			<div class="col-xs-4"></div>
 		</div>
+
 	</div>
 	<script>
-		function submitForm(){
-			var params= {"username":$('#username').val(),"password":$('#password').val()};
-			$.post('admin/login',params,function(json){
-				if(json.success){
-					sessionStorage.setItem('userId',json.data.id);
-					sessionStorage.setItem('token',json.data.token);
-					sessionStorage.setItem('username',json.data.username);
-					location.href='complaint.html';
-				}else{
-					alert(json.msg);
+		function submitForm() {
+			var params = {
+				"username" : $('#username').val(),
+				"password" : $('#password').val()
+			};
+			$.ajax({
+				dataType: 'json',
+				type : 'post',
+				url : 'admin/login',
+				data : params,
+				success:function(json){
+					if(json.success){
+						sessionStorage.setItem('userId', json.data.id);
+						sessionStorage.setItem('token', json.data.token);
+						sessionStorage.setItem('username', json.data.username);
+						location.href = 'complaint.html';
+					}else{
+						alert(json.msg);
+					}
+				},error:function(e){
+					alert(e.status+','+e.statusText);	
 				}
-			},'json');
+			});
 		}
 	</script>
 </body>

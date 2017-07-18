@@ -4,7 +4,7 @@
 <title>后会有期后台管理</title>
 <meta charset="UTF-8">
 <script type="text/javascript"
-	src="plugins/jquery-easyui-1.5.2/jquery.min.js"></script>
+	src="plugins/jquery1.11.3.min.js"></script>
 <link rel="stylesheet" type="text/css"
 	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
 <script type="text/javascript"
@@ -32,7 +32,7 @@ header a:HOVER {
 	<header
 		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
 		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
-		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="login.html" style="float: right; margin-right: 2em;">登录</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="version.html">查看版本号</a><a href="login.html" style="float: right; margin-right: 2em;">登录</a>
 	</header>
 	<div class="container-fluid">
 		<div class="row">
@@ -67,6 +67,7 @@ header a:HOVER {
 		function load() {
 			var userId=sessionStorage.getItem('userId');
 			if(!userId){
+				location.href='login.html';
 				return;
 			}
 			var params = {

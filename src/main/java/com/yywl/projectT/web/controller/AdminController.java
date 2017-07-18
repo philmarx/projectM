@@ -1,6 +1,7 @@
 package com.yywl.projectT.web.controller;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -23,6 +24,7 @@ import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bean.ValidatorBean;
 import com.yywl.projectT.bo.AdminBo;
 import com.yywl.projectT.dao.AdminDao;
+import com.yywl.projectT.dao.ApplicationDao;
 import com.yywl.projectT.dao.ComplaintDao;
 import com.yywl.projectT.dao.LocationDao;
 import com.yywl.projectT.dao.RoomDao;
@@ -32,6 +34,7 @@ import com.yywl.projectT.dao.TransactionDetailsDao;
 import com.yywl.projectT.dao.UserDao;
 import com.yywl.projectT.dao.WithdrawalsDao;
 import com.yywl.projectT.dmo.AdminDmo;
+import com.yywl.projectT.dmo.ApplicationDmo;
 import com.yywl.projectT.dmo.ComplaintDmo;
 import com.yywl.projectT.dmo.LocationDmo;
 import com.yywl.projectT.dmo.RoomMemberDmo;
@@ -84,7 +87,7 @@ public class AdminController {
 	public Callable<ResultModel> findAttend(long userId, String token, int page, int size) {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
-			Page<RoomMemberDmo> roomMembers = this.roomMemberDao.findByRequestNotLate(true,
+			Page<RoomMemberDmo> roomMembers = this.roomMemberDao.findByRequestNotLateAndIsSigned(true, false,
 					new PageRequest(page, size));
 			return new ResultModel(true, null, roomMembers);
 		};
@@ -187,6 +190,33 @@ public class AdminController {
 				withdrawalsDmoPage = this.withdrawalsDao.findByState(state, pageable);
 			}
 			return new ResultModel(true, "", withdrawalsDmoPage);
+		};
+	}
+
+	@Autowired
+	ApplicationDao applicationDao;
+
+	@PostMapping("findApplications")
+	public Callable<ResultModel> findApplications(long userId, String token) {
+		return () -> {
+			this.adminBo.loginByToken(userId, token);
+			List<ApplicationDmo> list = this.applicationDao.findAll();
+			return new ResultModel(true, "", list);
+		};
+	}
+
+	@PostMapping("changeVersion")
+	public Callable<ResultModel> changeVersion(long userId, String token, int id, String version) {
+		return () -> {
+			this.adminBo.loginByToken(userId, token);
+			if (StringUtils.isEmpty(version)) {
+				log.error("version不能为空");
+				return new ResultModel(false, "version不能为空", null);
+			}
+			ApplicationDmo applicationDmo = this.applicationDao.findOne(id);
+			applicationDmo.setVersion(version);
+			this.applicationDao.save(applicationDmo);
+			return new ResultModel(true, "修改成功", applicationDmo);
 		};
 	}
 
