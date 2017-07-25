@@ -27,6 +27,7 @@ import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.ApplicationDao;
 import com.yywl.projectT.dao.ComplaintDao;
 import com.yywl.projectT.dao.LocationDao;
+import com.yywl.projectT.dao.NotLateReasonDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;
 import com.yywl.projectT.dao.SuggestionDao;
@@ -37,6 +38,7 @@ import com.yywl.projectT.dmo.AdminDmo;
 import com.yywl.projectT.dmo.ApplicationDmo;
 import com.yywl.projectT.dmo.ComplaintDmo;
 import com.yywl.projectT.dmo.LocationDmo;
+import com.yywl.projectT.dmo.NotLateReasonDmo;
 import com.yywl.projectT.dmo.RoomMemberDmo;
 import com.yywl.projectT.dmo.SuggestionDmo;
 import com.yywl.projectT.dmo.WithdrawalsDmo;
@@ -71,6 +73,21 @@ public class AdminController {
 	@Autowired
 	SuggestionDao suggestionDao;
 
+	@Autowired
+	NotLateReasonDao noteLateReasonDao;
+	
+	@PostMapping("findReason")
+	public Callable<ResultModel> findReason(long loginId,String token,long userId,long roomId){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			NotLateReasonDmo dmo=this.noteLateReasonDao.findByUser_IdAndRoom_Id(userId, roomId);
+			if (null==dmo) {
+				dmo=new NotLateReasonDmo(null, this.userDao.findOne(userId),null, null, null);
+			}
+			return new ResultModel(true, "", dmo);
+		};
+	}
+	
 	@PostMapping("fenFa")
 	public Callable<ResultModel> fenFa(long id, long userId, String token) {
 		return () -> {

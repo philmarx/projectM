@@ -51,7 +51,7 @@ public class WithdrawalsBo {
 		userDao.save(user);
 		TransactionDetailsDmo tran1 = new TransactionDetailsDmo();
 		tran1.setCreateTime(withdrawals.getDealTime());
-		tran1.setDescription("支付宝提现");
+		tran1.setDescription("支付宝提现成功");
 		tran1.setMoney(0-withdrawals.getDealMoney());
 		tran1.setUser(user);
 		tran1.setCalc(false);

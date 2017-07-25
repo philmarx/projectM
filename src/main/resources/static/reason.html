@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<script type="text/javascript" src="plugins/jquery1.11.3.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+
+header a {
+	color: white;
+	font-size: 1.5em;
+	margin-left: 2em;
+	text-decoration: none;
+}
+
+header a:HOVER {
+	text-decoration: underline;
+}
+</style>
+</head>
+<body>
+	<header
+		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
+		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="version.html">查看版本号</a><a href="login.html" style="float: right; margin-right: 2em;">登录</a>
+	</header>
+	<div class="container">
+		<div class="row">
+			<div class="col-xs-4"></div>
+			<div class="col-xs-4">
+				<h3 id="nickname"></h3>
+				<h5>图片：</h5>
+				<div id="photoDiv"></div>
+				<h5>理由：</h5>
+				<div id="reasonDiv"></div>
+			</div>
+			<div class="col-xs-4"></div>
+		</div>
+
+	</div>
+	<script>
+		function load(){
+			var roomId=window.opener.roomId;
+			var userId=window.opener.userId;
+			var params={"loginId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token'),"roomId":roomId,"userId":userId};
+			if(!params||!params.loginId||!params.token){
+				alert('请登录');
+				return;
+			}
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:params,
+				url:'admin/findReason',
+				success:function(json){
+					if(!json.success){
+						alert(json.msg);
+						return;
+					}
+					if(json.data&&json.data.user){
+						$('#nickname').text(json.data.user.nickname);
+					}
+					if(json.data&&json.data.photoUrl){
+						$('#photoDiv').html('').html('<img src="'+photoUrl+'"></img>')
+					}else{
+						$('#photoDiv').html('').html('无图片');
+					}
+					if(json.data&&json.data.reason){
+						$('#reasonDiv').html('').html(json.data.reason);
+					}else{
+						$('#reasonDiv').html('').html('无理由');
+					}
+				},
+				error:function(e){
+					alert(e.status+','+e.statusText);
+				}
+			});
+		}
+		$(function(){
+			load();
+		});
+		
+	</script>
+</body>
+</html>

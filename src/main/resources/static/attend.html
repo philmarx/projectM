@@ -108,7 +108,7 @@ header a:HOVER {
 						$tr.append('<td>'+o.longitude+'</td>').append('<td>'+o.latitude+'</td>');
 						if(o.dealState==0){
 							$tr.append('<td>待处理</td>');
-							$tr.append('<td><a href="javascript:findLocation('+o.member.id+')">查看位置</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
+							$tr.append('<td><a href="javascript:findLocation('+o.member.id+')">查看位置</a><a style="margin-left:1em;" href="javascript:findReason('+o.member.id+','+o.room.id+')">查看理由</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
 						}else if(o.dealState==1){
 							$tr.append('<td>分发</td>');
 							$tr.append('<td>已处理</td>')
@@ -157,6 +157,11 @@ header a:HOVER {
 		function findLocation(id){
 			sessionStorage.setItem("locationUserId",id);
 			window.open('locations.html');
+		}
+		function findReason(userId,roomId){
+			window.userId=userId;
+			window.roomId=roomId;
+			window.open('reason.html');
 		}
 		$(function() {
 			load();
