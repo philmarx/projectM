@@ -52,6 +52,7 @@ header a:HOVER {
 							<th>房间ID</th>
 							<th>内容</th>
 							<th>投诉时间</th>
+							<th>查看</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -106,12 +107,17 @@ header a:HOVER {
 						var roomId=o.room==null?'空':o.room.id;
 						$tr.append('<td>'+roomId+'</td>');
 						$tr.append('<td>'+o.content+'</td>').append('<td>'+o.createTime+'</td>');
+						$tr.append('<a href="javascript:find('+o.id+')">查看</a>')
 						$tbody.append($tr);
 					});
 				} else {
 					alert(json.msg);
 				}
 			}, 'json')
+		}
+		function find(id){
+			sessionStorage.setItem('complaintId',id);
+			window.open('complaintInfo.html','_self')
 		}
 		$(function() {
 			load();

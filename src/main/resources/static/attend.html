@@ -156,12 +156,12 @@ header a:HOVER {
 		}
 		function findLocation(id){
 			sessionStorage.setItem("locationUserId",id);
-			window.open('locations.html');
+			window.open('locations.html','_self');
 		}
 		function findReason(userId,roomId){
-			window.userId=userId;
-			window.roomId=roomId;
-			window.open('reason.html');
+			sessionStorage.setItem('notLateRoomId',roomId);
+			sessionStorage.setItem('notLateUserId',userId);
+			window.open('reason.html','_self');
 		}
 		$(function() {
 			load();

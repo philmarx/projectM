@@ -31,6 +31,16 @@ public class NotLateReasonDmo implements Serializable {
 
 	private String photoUrl;
 
+	private long certifierId;//证明人id
+	
+	public long getCertifierId() {
+		return certifierId;
+	}
+
+	public void setCertifierId(long certifierId) {
+		this.certifierId = certifierId;
+	}
+
 	public Long getId() {
 		return id;
 	}

@@ -46,7 +46,7 @@ public class WithdrawalsBo {
 		UserDmo user = withdrawals.getUser();
 		int fee = (int) Math.round(withdrawals.getMoney() * 0.02);
 		withdrawals.setDealMoney(withdrawals.getMoney() - fee);
-		user.setLockAmount(user.getLockAmount() - withdrawals.getMoney());
+		user.setLockAmount(user.getLockAmount() - withdrawals.getDealMoney());
 		withdrawalsDao.save(withdrawals);
 		userDao.save(user);
 		TransactionDetailsDmo tran1 = new TransactionDetailsDmo();

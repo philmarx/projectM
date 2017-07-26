@@ -88,6 +88,14 @@ public class AdminController {
 		};
 	}
 	
+	@PostMapping("findComplaint")
+	public Callable<ResultModel> findComplaint(long loginId,String token,long complaintId){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			return new ResultModel(true, "", this.complaintDao.findOne(complaintId));
+		};
+	}
+	
 	@PostMapping("fenFa")
 	public Callable<ResultModel> fenFa(long id, long userId, String token) {
 		return () -> {

@@ -29,6 +29,16 @@ public class ComplaintDmo implements Serializable {
 	@JoinColumn(name = "owner_id")
 	private UserDmo owner;
 
+	private String photoUrl;
+	
+	public String getPhotoUrl() {
+		return photoUrl;
+	}
+
+	public void setPhotoUrl(String photoUrl) {
+		this.photoUrl = photoUrl;
+	}
+
 	@ManyToOne
 	@JoinColumn(name = "person_id")
 	private UserDmo person;
@@ -87,7 +97,7 @@ public class ComplaintDmo implements Serializable {
 		this.owner = owner;
 	}
 
-	public void setPersion(UserDmo person) {
+	public void setPerson(UserDmo person) {
 		this.person = person;
 	}
 

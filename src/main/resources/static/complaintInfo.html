@@ -35,13 +35,38 @@ header a:HOVER {
 		<div class="row">
 			<div class="col-xs-4"></div>
 			<div class="col-xs-4">
-				<h3 id="nickname"></h3>
-				<h5>图片：</h5>
+				<table class="table table-hover">
+					<tbody>
+						<tr>
+							<td>投诉者ID</td>
+							<td id="ownerId"></td>
+							<td>投诉者昵称</td>
+							<td id="ownerNickname"></td>
+						</tr>
+						<tr>
+							<td>被投诉者ID</td>
+							<td id="personId"></td>
+							<td>被投诉者昵称</td>
+							<td id="personNickname"></td>
+						</tr>
+						<tr>
+							<td>房间ID</td>
+							<td id="roomId"></td>
+							<td>房间名</td>
+							<td id="roomName"></td>
+						</tr>
+						
+						<tr>
+							<td>投诉时间</td>
+							<td id="createTime" colspan="3"></td>
+						</tr>
+						<tr>
+							<td>投诉内容</td>
+							<td id="content" colspan="3"></td>
+						</tr>
+					</tbody>
+				</table>
 				<div id="photoDiv"></div>
-				<h5>理由：</h5>
-				<div id="reasonDiv"></div>
-				<h5>证明人：</h5>
-				<div id="certifierIdDiv"></div>
 			</div>
 			<div class="col-xs-4"></div>
 		</div>
@@ -52,8 +77,7 @@ header a:HOVER {
 			var params={
 					"loginId":sessionStorage.getItem('userId'),
 					"token":sessionStorage.getItem('token'),
-					"roomId":sessionStorage.getItem('notLateRoomId'),
-					"userId":sessionStorage.getItem('notLateUserId')
+					"complaintId":sessionStorage.getItem('complaintId')
 			};
 			if(!params||!params.loginId||!params.token){
 				alert('请登录');
@@ -63,31 +87,33 @@ header a:HOVER {
 				type:'post',
 				dataType:'json',
 				data:params,
-				url:'admin/findReason',
+				url:'admin/findComplaint',
 				success:function(json){
 					if(!json.success){
 						alert(json.msg);
 						return;
 					}
-					if(json.data&&json.data.user){
-						$('#nickname').text(json.data.user.nickname);
+					console.dir(json.data);
+					if(json.data&&json.data.owner){
+						$('#ownerId').html(json.data.owner.id);
+						$('#ownerNickname').html(json.data.owner.nickname);
 					}
-					if(json.data&&json.data.photoUrl){
-						console.dir(typeof json.data.photoUrl);
-						console.dir(json.data.photoUrl);
-						$('#photoDiv').html('').html('<img src="'+photoUrl+'"></img>')
-					}else{
-						$('#photoDiv').html('').html('无图片');
+					if(json.data&&json.data.person){
+						$('#personId').html(json.data.person.id);
+						$('#personNickname').html(json.data.person.nickname);
 					}
-					if(json.data&&json.data.reason){
-						$('#reasonDiv').html('').html(json.data.reason);
-					}else{
-						$('#reasonDiv').html('').html('无理由');
+					if(json.data&&json.data.room){
+						$('#roomId').html(json.data.room.id);
+						$('#roomName').html(json.data.room.name);
 					}
-					if (json.data&&json.data.certifierId) {
-						$('#certifierIdDiv').html('').html(json.data.certifierId)
-					}else{
-						$('#certifierIdDiv').html('').html('无证明人')
+					if(json.data&&json.data.createTime){
+						$('#createTime').html(json.data.createTime);
+					}
+					if(json.data&&json.data.content){
+						$('#content').html(json.data.content);
+					}
+					if (json.data&&json.data.photoUrl) {
+						$('#photoDiv').html(typeof json.data.photoUrl +'<br/>'+json.data.photoUrl)
 					}
 				},
 				error:function(e){
