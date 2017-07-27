@@ -38,28 +38,20 @@ header a:HOVER {
 				<table class="table table-hover">
 					<tbody>
 						<tr>
-							<td>迟到ID</td>
+							<td>建议者ID</td>
 							<td id="userId"></td>
 						</tr>
 						<tr>
-							<td>迟到者昵称</td>
+							<td>建议者昵称</td>
 							<td id="userNickname"></td>
 						</tr>
 						<tr>
-							<td>证明人ID</td>
-							<td id="certifierId" colspan="3"></td>
+							<td>建议时间</td>
+							<td id="createTime"></td>
 						</tr>
 						<tr>
-							<td>房间ID</td>
-							<td id="roomId"></td>
-						</tr>
-						<tr>
-							<td>房间名</td>
-							<td id="roomName"></td>
-						</tr>
-						<tr>
-							<td>理由</td>
-							<td id="reason" colspan="3"></td>
+							<td>建议内容</td>
+							<td id="content"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -74,8 +66,7 @@ header a:HOVER {
 			var params={
 					"loginId":sessionStorage.getItem('userId'),
 					"token":sessionStorage.getItem('token'),
-					"roomId":sessionStorage.getItem('notLateRoomId'),
-					"userId":sessionStorage.getItem('notLateUserId')
+					"suggestionId":sessionStorage.getItem('suggestionId')
 			};
 			if(!params||!params.loginId||!params.token){
 				alert('请登录');
@@ -85,7 +76,7 @@ header a:HOVER {
 				type:'post',
 				dataType:'json',
 				data:params,
-				url:'admin/findReason',
+				url:'admin/findSuggestion',
 				success:function(json){
 					if(!json.success){
 						alert(json.msg);
@@ -93,10 +84,8 @@ header a:HOVER {
 					}
 					$('#userId').html(json.data.user.id);
 					$('#userNickname').html(json.data.user.nickname);
-					$('#certifierId').html(json.data.certifierId||'无');
-					$('#roomId').html(json.data.room.id);
-					$('#roomName').html(json.data.room.name);
-					$('#reason').html(json.data.reason);
+					$('#createTime').html(json.data.createTime);
+					$('#content').html(json.data.content);
 					if(json.data.photoUrl){
 						var $photoDiv=$('#photoDiv');
 						var photos=JSON.parse(json.data.photoUrl);

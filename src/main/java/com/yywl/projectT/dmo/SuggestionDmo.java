@@ -34,6 +34,14 @@ public class SuggestionDmo implements Serializable {
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createTime;
 	
+	private String photoUrl;
+	
+	public String getPhotoUrl() {
+		return photoUrl;
+	}
+	public void setPhotoUrl(String photoUrl) {
+		this.photoUrl = photoUrl;
+	}
 	public SuggestionDmo() {
 		super();
 	}

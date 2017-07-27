@@ -8,6 +8,7 @@
 	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
 <script type="text/javascript"
 	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script src="js/common.js"></script>
 <style type="text/css">
 * {
 	margin: 0 auto;
@@ -93,7 +94,6 @@ header a:HOVER {
 						alert(json.msg);
 						return;
 					}
-					console.dir(json.data);
 					if(json.data&&json.data.owner){
 						$('#ownerId').html(json.data.owner.id);
 						$('#ownerNickname').html(json.data.owner.nickname);
@@ -113,7 +113,12 @@ header a:HOVER {
 						$('#content').html(json.data.content);
 					}
 					if (json.data&&json.data.photoUrl) {
-						$('#photoDiv').html(typeof json.data.photoUrl +'<br/>'+json.data.photoUrl)
+						var photos= JSON.parse(json.data.photoUrl);
+						var $photoDiv=$('#photoDiv');
+						$.each(photos,function(i,o){
+							var $img=$('<img src="'+window.photoUrlPrefix+json.data.owner.id+'/'+o+photoUrlSuffix+'" />')
+							$photoDiv.append($img);
+						});
 					}
 				},
 				error:function(e){

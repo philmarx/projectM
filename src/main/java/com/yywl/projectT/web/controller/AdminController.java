@@ -245,6 +245,15 @@ public class AdminController {
 		};
 	}
 
+	@PostMapping("findSuggestion")
+	public Callable<ResultModel> findSuggestion(long suggestionId,long loginId,String token){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			SuggestionDmo dmo=this.suggestionDao.findOne(suggestionId);
+			return new ResultModel(true, "", dmo);
+		};
+	}
+	
 	@Autowired
 	WithdrawalsDao withdrawalsDao;
 }

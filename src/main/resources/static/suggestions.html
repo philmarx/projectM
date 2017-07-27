@@ -10,7 +10,7 @@
 <script type="text/javascript"
 	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="plugins/jquery.pagination.js"></script>
-<script type="text/javascript" src="js/localStorage.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
 <style type="text/css">
 * {
 	margin: 0 auto;
@@ -49,6 +49,7 @@ header a:HOVER {
 							<th>用户昵称</th>
 							<th>建议内容</th>
 							<th>建议时间</th>
+							<th>查看</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -100,6 +101,7 @@ header a:HOVER {
 					$.each(json.data.content,function(i,o){
 						var $tr=$('<tr></tr>').append('<td>'+o.user.id+'</td>').append('<td>'+o.user.nickname+'</td>');
 						$tr.append('<td>'+o.content+'</td>').append('<td>'+o.createTime+'</td>');
+						$tr.append('<td><a href="javascript:findOne('+o.id+')">查看</a></td>')
 						$tbody.append($tr);
 					});
 				} else {
@@ -110,6 +112,10 @@ header a:HOVER {
 		$(function() {
 			load();
 		});
+		function findOne(id){
+			sessionStorage.setItem('suggestionId',id);
+			window.open('suggestionInfo.html','_self');
+		}
 	</script>
 </body>
 </html>
