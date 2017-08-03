@@ -48,8 +48,8 @@ header a:HOVER {
 							<th>用户ID</th>
 							<th>用户姓名</th>
 							<th>房间ID</th>
-							<th>经度</th>
-							<th>纬度</th>
+							<th>房间经度</th>
+							<th>房间纬度</th>
 							<th>状态</th>
 							<th>操作</th>
 						</tr>
@@ -105,10 +105,11 @@ header a:HOVER {
 					$.each(json.data.content,function(i,o){
 						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.member.id+'</td>').append('<td>'+o.member.nickname+'</td>');
 						$tr.append('<td>'+o.room.id+'</td>');
-						$tr.append('<td>'+o.longitude+'</td>').append('<td>'+o.latitude+'</td>');
+						$tr.append('<td>'+o.room.longitude+'</td>').append('<td>'+o.room.latitude+'</td>');
+						window.data[o.id+'']=o;
 						if(o.dealState==0){
 							$tr.append('<td>待处理</td>');
-							$tr.append('<td><a href="javascript:findLocation('+o.member.id+')">查看位置</a><a style="margin-left:1em;" href="javascript:findReason('+o.member.id+','+o.room.id+')">查看理由</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
+							$tr.append('<td><a href="javascript:findLocation('+o.id+')">查看位置</a><a style="margin-left:1em;" href="javascript:findReason('+o.member.id+','+o.room.id+')">查看理由</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
 						}else if(o.dealState==1){
 							$tr.append('<td>分发</td>');
 							$tr.append('<td>已处理</td>')
@@ -155,7 +156,9 @@ header a:HOVER {
 			},'json');
 		}
 		function findLocation(id){
-			sessionStorage.setItem("locationUserId",id);
+			var obj=window.data[id+''];
+			sessionStorage.setItem('locationUserId',obj.member.id);
+			sessionStorage.setItem('roomId',obj.room.id);
 			window.open('locations.html','_self');
 		}
 		function findReason(userId,roomId){
@@ -164,6 +167,7 @@ header a:HOVER {
 			window.open('reason.html','_self');
 		}
 		$(function() {
+			window.data={};
 			load();
 		});
 	</script>

@@ -1,7 +1,10 @@
 package com.yywl.projectT.web.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 
@@ -26,6 +29,7 @@ import com.yywl.projectT.bo.AdminBo;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.ApplicationDao;
 import com.yywl.projectT.dao.ComplaintDao;
+import com.yywl.projectT.dao.JdbcDao;
 import com.yywl.projectT.dao.LocationDao;
 import com.yywl.projectT.dao.NotLateReasonDao;
 import com.yywl.projectT.dao.RoomDao;
@@ -41,6 +45,7 @@ import com.yywl.projectT.dmo.LocationDmo;
 import com.yywl.projectT.dmo.NotLateReasonDmo;
 import com.yywl.projectT.dmo.RoomMemberDmo;
 import com.yywl.projectT.dmo.SuggestionDmo;
+import com.yywl.projectT.dmo.UserDmo;
 import com.yywl.projectT.dmo.WithdrawalsDmo;
 
 @RequestMapping("admin")
@@ -75,27 +80,39 @@ public class AdminController {
 
 	@Autowired
 	NotLateReasonDao noteLateReasonDao;
-	
+
 	@PostMapping("findReason")
-	public Callable<ResultModel> findReason(long loginId,String token,long userId,long roomId){
-		return ()->{
+	public Callable<ResultModel> findReason(long loginId, String token, long userId, long roomId) {
+		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			NotLateReasonDmo dmo=this.noteLateReasonDao.findByUser_IdAndRoom_Id(userId, roomId);
-			if (null==dmo) {
-				dmo=new NotLateReasonDmo(null, this.userDao.findOne(userId),null, null, null);
+			NotLateReasonDmo dmo = this.noteLateReasonDao.findByUser_IdAndRoom_Id(userId, roomId);
+			if (null == dmo) {
+				dmo = new NotLateReasonDmo(null, this.userDao.findOne(userId), null, null, null, null, 0);
 			}
-			return new ResultModel(true, "", dmo);
+			Map<String, Object> map = new HashMap<>();
+			map.put("userId", dmo.getUser().getId());
+			map.put("nickname", dmo.getUser().getNickname());
+			map.put("certifierId", dmo.getCertifierId());
+			UserDmo certifier = this.userDao.findOne(dmo.getCertifierId());
+			map.put("certifier", certifier);
+			map.put("room", dmo.getRoom());
+			map.put("reason", dmo.getReason());
+			map.put("createTime", dmo.getCreateTime() != null ? dateFormat.format(dmo.getCreateTime()) : "");
+			map.put("photoUrl", dmo.getPhotoUrl());
+			return new ResultModel(true, "", map);
 		};
 	}
-	
+
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
 	@PostMapping("findComplaint")
-	public Callable<ResultModel> findComplaint(long loginId,String token,long complaintId){
-		return ()->{
+	public Callable<ResultModel> findComplaint(long loginId, String token, long complaintId) {
+		return () -> {
 			this.adminBo.loginByToken(loginId, token);
 			return new ResultModel(true, "", this.complaintDao.findOne(complaintId));
 		};
 	}
-	
+
 	@PostMapping("fenFa")
 	public Callable<ResultModel> fenFa(long id, long userId, String token) {
 		return () -> {
@@ -113,7 +130,7 @@ public class AdminController {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
 			Page<RoomMemberDmo> roomMembers = this.roomMemberDao.findByRequestNotLateAndIsSigned(true, false,
-					new PageRequest(page, size));
+					new PageRequest(page, size, Direction.DESC, "room_BeginTime"));
 			return new ResultModel(true, null, roomMembers);
 		};
 	}
@@ -141,6 +158,23 @@ public class AdminController {
 			return new ResultModel(true, null, locations);
 		};
 	}
+
+	@PostMapping("findLocationList")
+	public Callable<ResultModel> findLocationList(long userId, String token, Long id, int page, int size) {
+		return () -> {
+			this.adminBo.loginByToken(userId, token);
+			if (id == null) {
+				log.error("用户不存在");
+				throw new Exception("用户不存在");
+			}
+			List<Map<String, Object>> list = this.jdbcDao.findLocationList(id, ValidatorBean.page(page),
+					ValidatorBean.size(size));
+			return new ResultModel(true, null, list);
+		};
+	}
+
+	@Autowired
+	JdbcDao jdbcDao;
 
 	@PostMapping("findSuggestions")
 	public Callable<ResultModel> findSuggestions(long userId, String token, int page, int size) {
@@ -246,14 +280,14 @@ public class AdminController {
 	}
 
 	@PostMapping("findSuggestion")
-	public Callable<ResultModel> findSuggestion(long suggestionId,long loginId,String token){
-		return ()->{
+	public Callable<ResultModel> findSuggestion(long suggestionId, long loginId, String token) {
+		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			SuggestionDmo dmo=this.suggestionDao.findOne(suggestionId);
+			SuggestionDmo dmo = this.suggestionDao.findOne(suggestionId);
 			return new ResultModel(true, "", dmo);
 		};
 	}
-	
+
 	@Autowired
 	WithdrawalsDao withdrawalsDao;
 }

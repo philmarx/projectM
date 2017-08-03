@@ -55,6 +55,8 @@ header a:HOVER {
 							<th>纬度</th>
 							<th>房间号</th>
 							<th>日期</th>
+							<th>地点</th>
+							<th>距离(米)</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -109,18 +111,16 @@ header a:HOVER {
 				"size" : pageSize,
 				"id":sessionStorage.getItem('locationUserId')
 			}
-			$.post('admin/findLocation', params, function(json) {
+			$.post('admin/findLocationList', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
 					$tbody.html('');
-					$.each(json.data.content,function(i,o){
+					$.each(json.data,function(i,o){
 						var $tr=$('<tr></tr>').append('<td>'+o.longitude+'</td>').append('<td>'+o.latitude+'</td>');
-						var roomId='';
-						if(o.room){
-							roomId=o.room.id;
-						}
-						$tr.append('<td>'+roomId+'</td>');
-						$tr.append('<td>'+o.sendTime+'</td>');
+						$tr.append('<td>'+(o.roomId||'')+'</td>');
+						$tr.append('<td>'+(o.sendTime===null?'':dateTimeFormat(o.sendTime))+'</td>');
+						$tr.append('<td>'+(o.place||'')+'</td>');
+						$tr.append('<td>'+(o.distance||'')+'</td>');
 						$tbody.append($tr);
 					});
 				} else {

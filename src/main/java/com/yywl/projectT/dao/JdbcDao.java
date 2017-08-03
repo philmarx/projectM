@@ -2,6 +2,7 @@ package com.yywl.projectT.dao;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import javax.persistence.EntityManager;
@@ -160,6 +161,17 @@ public class JdbcDao {
 			return userVo;
 		});
 		return userVos;
+	}
+
+	public List<Map<String, Object>> findLocationList(long userId, int page, int size) {
+		StringBuilder sql=new StringBuilder();
+		sql.append("select l.id,l.ip,l.longitude,l.latitude,l.place,l.send_time sendTime,r.name roomName, r.id roomId,");
+		sql.append("distance_calc(l.longitude,l.latitude,r.longitude,r.latitude)*1000 distance ");
+		sql.append("from location l LEFT JOIN room r on l.room_id=r.id ");
+		sql.append("where l.user_id="+userId+" ");
+		sql.append("order by sendTime desc limit "+page*size+","+size+" ");
+		List<Map<String, Object>> list=this.jdbc.queryForList(sql.toString());
+		return list;
 	}
 
 }

@@ -18,7 +18,7 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	boolean existsByRoom_IdAndResult(long roomId, int result);
 
-	int countByRoom_Id(Long roomId);
+	long countByRoom_Id(Long roomId);
 
 	boolean existsByGame_IdAndMember_Id(int gameId, Long memberId);
 
@@ -34,7 +34,7 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	List<RoomMemberDmo> findByRoom_IdAndReady(long roomId, boolean b);
 
-	int countByMember_IdAndRoom_Id(Long id, long roomId);
+	long countByMember_IdAndRoom_Id(Long id, long roomId);
 
 	List<RoomMemberDmo> findByRoom_IdNotAndMember_IdAndReady(long roomId, long userId, boolean ready);
 
@@ -47,7 +47,7 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	List<RoomMemberDmo> findByRoom_BeginTimeBetweenAndRoom_State(Date start, Date end, int ordinal);
 
-	int countByRoom_IdAndReady(long roomId, boolean b);
+	long countByRoom_IdAndReady(long roomId, boolean b);
 
 	List<RoomMemberDmo> findByMember_IdAndReady(long userId, boolean b);
 

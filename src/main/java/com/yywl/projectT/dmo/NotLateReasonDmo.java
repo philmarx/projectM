@@ -1,6 +1,7 @@
 package com.yywl.projectT.dmo;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,6 +10,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Table(name = "not_late_reason")
 @Entity
@@ -22,6 +27,17 @@ public class NotLateReasonDmo implements Serializable {
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private UserDmo user;
+	@Temporal(TemporalType.TIMESTAMP)
+	@JsonFormat(pattern="yyyy-MM-dd hh:mm:ss",timezone="GMT+8")
+	private Date createTime;
+	
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
 
 	@ManyToOne
 	@JoinColumn(name = "room_id")
@@ -85,8 +101,10 @@ public class NotLateReasonDmo implements Serializable {
 		super();
 	}
 
-	public NotLateReasonDmo(Long id, UserDmo user, RoomDmo room, String reason, String photoUrl) {
+	public NotLateReasonDmo(Long id, UserDmo user, RoomDmo room, String reason, String photoUrl,Date createTime,long certifierId) {
 		super();
+		this.certifierId=certifierId;
+		this.createTime=createTime;
 		this.id = id;
 		this.user = user;
 		this.room = room;

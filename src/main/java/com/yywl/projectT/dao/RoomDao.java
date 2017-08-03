@@ -29,10 +29,10 @@ public interface RoomDao extends JpaRepository<RoomDmo, Long> {
 
 	List<RoomDmo> findByEndTimeBetweenAndState(Date currentTime, Date delayTime, int state);
 
-	int countByManager_IdAndBeginTimeBetween(long userId, Date date1, Date date2);
+	long countByManager_IdAndBeginTimeBetween(long userId, Date date1, Date date2);
 
 	Page<RoomDmo> findByBelongCircle_IdAndState(long circleId, int i,Pageable pageable);
 
-	int countByBelongCircle_Id(Long id);
+	long countByBelongCircle_Id(Long id);
 
 }

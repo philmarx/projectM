@@ -18,7 +18,7 @@ public interface UserCircleDao extends JpaRepository<UserCircleDmo, Long> {
 
 	boolean existsByUser_IdAndCircle_Id(long userId, long circleId);
 
-	int countByCircle_Id(Long id);
+	long countByCircle_Id(Long id);
 
 	List<UserCircleDmo> findByCircle_IdOrderByExperienceDesc(long circleId);
 

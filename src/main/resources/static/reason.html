@@ -47,7 +47,15 @@ header a:HOVER {
 						</tr>
 						<tr>
 							<td>证明人ID</td>
-							<td id="certifierId" colspan="3"></td>
+							<td id="certifierId"></td>
+						</tr>
+						<tr>
+							<td>证明人手机</td>
+							<td id="certifierPhone"></td>
+						</tr>
+						<tr>
+							<td>申请时间</td>
+							<td id="createTime"></td>
 						</tr>
 						<tr>
 							<td>房间ID</td>
@@ -56,6 +64,14 @@ header a:HOVER {
 						<tr>
 							<td>房间名</td>
 							<td id="roomName"></td>
+						</tr>
+						<tr>
+							<td>房间开始时间</td>
+							<td id="roomBeginTime"></td>
+						</tr>
+						<tr>
+							<td>房间开始时间</td>
+							<td id="roomEndTime"></td>
 						</tr>
 						<tr>
 							<td>理由</td>
@@ -91,12 +107,16 @@ header a:HOVER {
 						alert(json.msg);
 						return;
 					}
-					$('#userId').html(json.data.user.id);
-					$('#userNickname').html(json.data.user.nickname);
+					$('#userId').html(json.data.userId);
+					$('#userNickname').html(json.data.nickname);
 					$('#certifierId').html(json.data.certifierId||'无');
-					$('#roomId').html(json.data.room.id);
-					$('#roomName').html(json.data.room.name);
+					$('#certifierPhone').html(json.data.certifier?json.data.certifier.phone:'无');
+					$('#roomId').html(json.data.room?json.data.room.id:'');
+					$('#roomName').html(json.data.room?json.data.room.name:'');
+					$('#roomBeginTime').html(json.data.room?json.data.room.beginTime:'');
+					$('#roomEndTime').html(json.data.room?json.data.room.endTime:'');
 					$('#reason').html(json.data.reason);
+					$('#createTime').html(json.data.createTime);
 					if(json.data.photoUrl){
 						var $photoDiv=$('#photoDiv');
 						var photos=JSON.parse(json.data.photoUrl);

@@ -16,7 +16,7 @@ public interface UserDao extends JpaRepository<UserDmo, Long> {
 
 	UserDmo findByXlwbUid(String xlwbUid);
 
-	int countByNickname(String nickname);
+	long countByNickname(String nickname);
 
 	boolean existsByPhone(String phone);
 
