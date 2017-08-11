@@ -74,6 +74,10 @@ public class AdminDmo implements Serializable{
 	public AdminDmo() {
 		super();
 	}
-	
+
+	public AdminDmo(Long id) {
+		super();
+		this.id = id;
+	}
 	
 }

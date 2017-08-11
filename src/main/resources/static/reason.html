@@ -33,44 +33,41 @@ header a:HOVER {
 	</header>
 	<div class="container">
 		<div class="row">
-			<div class="col-xs-4"></div>
-			<div class="col-xs-4">
+			<div class="col-xs-12">
+				<hr />
+				<h4>查看信息</h4>
 				<table class="table table-hover">
 					<tbody>
 						<tr>
 							<td>迟到ID</td>
 							<td id="userId"></td>
-						</tr>
-						<tr>
 							<td>迟到者昵称</td>
 							<td id="userNickname"></td>
 						</tr>
 						<tr>
 							<td>证明人ID</td>
 							<td id="certifierId"></td>
-						</tr>
-						<tr>
 							<td>证明人手机</td>
 							<td id="certifierPhone"></td>
 						</tr>
 						<tr>
 							<td>申请时间</td>
-							<td id="createTime"></td>
+							<td id="createTime" colspan="3"></td>
 						</tr>
 						<tr>
 							<td>房间ID</td>
 							<td id="roomId"></td>
-						</tr>
-						<tr>
 							<td>房间名</td>
 							<td id="roomName"></td>
 						</tr>
 						<tr>
-							<td>房间开始时间</td>
-							<td id="roomBeginTime"></td>
+							<td>金额</td>
+							<td id="money" colspan="3"></td>
 						</tr>
 						<tr>
 							<td>房间开始时间</td>
+							<td id="roomBeginTime"></td>
+							<td>房间结束时间</td>
 							<td id="roomEndTime"></td>
 						</tr>
 						<tr>
@@ -79,20 +76,77 @@ header a:HOVER {
 						</tr>
 					</tbody>
 				</table>
+				<hr/>
+				<h4>房间内的位置</h4>
+				<div id="locationRoomDiv"></div>
+				<hr />
+				<h4>活动开始前后两小时位置</h4>
+				<div id="locationBeginTimeDiv"></div>
+				<hr/>
+				<h4>图片</h4>
 				<div id="photoDiv"></div>
+				<hr/>
+				<div id="btnDiv">
+					<button onclick="jieDong()">解冻</button>
+					<button onclick="fenFa()">分发</button>
+				</div>
 			</div>
-			<div class="col-xs-4"></div>
 		</div>
 
 	</div>
 	<script>
+	function jieDong(){
+		var result=window.confirm("是否确定");
+		if (!result) {
+			return;
+		}
+		$.ajax({
+			url:'admin/jieDong',
+			type:'post',
+			dataType:'json',
+			data:{"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token'),"id":sessionStorage.getItem('notLateId')},
+			success:function(json){
+				if(json.success){
+					alert('解冻成功')
+					$('button').hide();
+					return;
+				}
+				alert(json.msg);
+			},error:function(e){
+				alert(e.status+','+e.statusText);
+			}
+		})
+	}
+	function fenFa(){
+		var result=window.confirm("是否确定");
+		if (!result) {
+			return;
+		}
+		$.ajax({
+			url:'admin/fenFa',
+			type:'post',
+			dataType:'json',
+			data:{"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token'),"id":sessionStorage.getItem('notLateId')},
+			success:function(json){
+				if(json.success){
+					alert('分发成功')
+					$('button').hide();
+					return;
+				}
+				alert(json.msg);
+			},error:function(e){
+				alert(e.status+','+e.statusText);
+			}
+		})
+	}
+		var params={
+				"loginId":sessionStorage.getItem('userId'),
+				"token":sessionStorage.getItem('token'),
+				"notLateId":sessionStorage.getItem('notLateId'),
+				"roomId":sessionStorage.getItem('notLateRoomId'),
+				"userId":sessionStorage.getItem('notLateUserId')
+		};
 		function load(){
-			var params={
-					"loginId":sessionStorage.getItem('userId'),
-					"token":sessionStorage.getItem('token'),
-					"roomId":sessionStorage.getItem('notLateRoomId'),
-					"userId":sessionStorage.getItem('notLateUserId')
-			};
 			if(!params||!params.loginId||!params.token){
 				alert('请登录');
 				return;
@@ -113,20 +167,77 @@ header a:HOVER {
 					$('#certifierPhone').html(json.data.certifier?json.data.certifier.phone:'无');
 					$('#roomId').html(json.data.room?json.data.room.id:'');
 					$('#roomName').html(json.data.room?json.data.room.name:'');
+					$('#money').html(json.data.room?json.data.room.money/100+'元':'');
 					$('#roomBeginTime').html(json.data.room?json.data.room.beginTime:'');
 					$('#roomEndTime').html(json.data.room?json.data.room.endTime:'');
 					$('#reason').html(json.data.reason);
 					$('#createTime').html(json.data.createTime);
+					if(json.data.dealState===0){
+						$('button').show(); 
+					}else{
+						$('button').hide(); 
+					}
+					loadLocation();
+					loadLocationAround();
 					if(json.data.photoUrl){
 						var $photoDiv=$('#photoDiv');
 						var photos=JSON.parse(json.data.photoUrl);
 						$.each(photos,function(i,o){
-							var $img=$('<img src="'+photoUrlPrefix+json.data.user.id+'/'+o+photoUrlSuffix+'"></img>')
+							var $img=$('<img src="'+photoUrlPrefix+o+photoUrlSuffix+'"></img>')
 							$photoDiv.append($img);
 						});
 					}
 				},
 				error:function(e){
+					alert(e.status+','+e.statusText);
+				}
+			});
+		}
+		function loadLocationAround(){
+			var $locationBeginTimeDiv=$('#locationBeginTimeDiv').html('');
+			params.beginTime=$('#roomBeginTime').text();
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:params,
+				url:'admin/findLocationAroundBeginTime',
+				success:function(json){
+					if(!json.success){
+						if (json.msg==='登录超时') {
+							return;
+						}
+						alert(json.msg);
+						return;
+					}
+					$.each(json.data,function(i,o){
+						var $p=$('<p><span style="margin-right:1em;">发送时间：'+dateTimeFormat(o.sendTime)+'</span><span style="margin-right:1em;">距离：'+o.distance+'米</span><span style="margin-right:1em;">IP：'+o.ip+'</span><span style="margin-right:1em;">备注：'+o.place+'</span></p>');
+						$locationBeginTimeDiv.append($p);
+					});
+				},error:function(e){
+					alert(e.status+','+e.statusText);
+				}
+			});
+		}
+		function loadLocation(){
+			var $locationRoomDiv=$('#locationRoomDiv').html('');
+			$.ajax({
+				type:'post',
+				dataType:'json',
+				data:params,
+				url:'admin/findLocationByRoom_Id',
+				success:function(json){
+					if(!json.success){
+						if (json.msg==='登录超时') {
+							return;
+						}
+						alert(json.msg);
+						return;
+					}
+					$.each(json.data,function(i,o){
+						var $p=$('<p><span style="margin-right:1em;">发送时间：'+o.sendTime+'</span><span style="margin-right:1em;">距离：'+o.distance+'米</span><span style="margin-right:1em;">IP：'+o.ip+'</span><span style="margin-right:1em;">备注：'+o.place+'</span></p>');
+						$locationRoomDiv.append($p);
+					});
+				},error:function(e){
 					alert(e.status+','+e.statusText);
 				}
 			});

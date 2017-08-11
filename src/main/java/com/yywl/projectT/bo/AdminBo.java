@@ -13,11 +13,13 @@ import org.springframework.stereotype.Service;
 import com.yywl.projectT.bean.Keys;
 import com.yywl.projectT.bean.enums.*;
 import com.yywl.projectT.dao.AdminDao;
+import com.yywl.projectT.dao.NotLateReasonDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;
 import com.yywl.projectT.dao.TransactionDetailsDao;
 import com.yywl.projectT.dao.UserDao;
 import com.yywl.projectT.dmo.AdminDmo;
+import com.yywl.projectT.dmo.NotLateReasonDmo;
 import com.yywl.projectT.dmo.RoomDmo;
 import com.yywl.projectT.dmo.RoomMemberDmo;
 import com.yywl.projectT.dmo.TransactionDetailsDmo;
@@ -25,8 +27,8 @@ import com.yywl.projectT.dmo.UserDmo;
 
 @Service
 public class AdminBo {
-	
-	private final static Log log=LogFactory.getLog(AdminBo.class);
+
+	private final static Log log = LogFactory.getLog(AdminBo.class);
 	@Autowired
 	AdminDao adminDao;
 
@@ -60,21 +62,45 @@ public class AdminBo {
 	@Autowired
 	RoomDao roomDao;
 
+	@Autowired
+	NotLateReasonDao notLateReasonDao;
+
 	@Transactional(rollbackOn = Throwable.class)
-	public void fenFa(long id) throws Exception {
+	public void fenFa(long id, AdminDmo admin) throws Exception {
+		NotLateReasonDmo reasonDmo = this.notLateReasonDao.findOne(id);
 		long currentTime = System.currentTimeMillis();
-		RoomMemberDmo rm = this.roomMemberDao.findOne(id);
-		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
+		RoomMemberDmo rm = this.roomMemberDao.findByMember_IdAndRoom_Id(reasonDmo.getUser().getId(),
+				reasonDmo.getRoom().getId());
+		if (rm.getDealState() != RoomRequestNotLateState.待处理.ordinal()
+				|| reasonDmo.getDealState() != RoomRequestNotLateState.待处理.ordinal()) {
 			log.error("已处理");
 			throw new Exception("已处理");
 		}
+		reasonDmo.setDealState(RoomRequestNotLateState.分发.ordinal());
+		reasonDmo.setAdmin(admin);
+		this.notLateReasonDao.save(reasonDmo);
 		rm.setLockMoney(false);
 		List<RoomMemberDmo> roomMembers = this.roomMemberDao
 				.findByRoom_IdAndMember_IdNotAndIsSigned(rm.getRoom().getId(), rm.getMember().getId(), true);
 		if (roomMembers.isEmpty()) {
+			UserDmo systemUser = this.userDao.findOne(Keys.SYSTEM_ID);
+			String roomName = rm.getRoom().getName();
+			rm.setDealState(RoomRequestNotLateState.分发.ordinal());
+			RoomDmo room = rm.getRoom();
+			int money = room.getMoney();
+			UserDmo user = rm.getMember();
+			user.setLockAmount(user.getLockAmount() - money);
+			userDao.save(user);
+			TransactionDetailsDmo tran = new TransactionDetailsDmo();
+			tran.setCreateTime(new Date(currentTime));
+			tran.setDescription("【" + roomName + "】迟到，扣除保证金");
+			tran.setUser(user);
+			tran.setMoney(0 - money);
+			transactionDetailsDao.save(tran);
+			systemUser.setAmount(systemUser.getAmount() + money);
 			return;
 		}
-		String roomName=rm.getRoom().getName();
+		String roomName = rm.getRoom().getName();
 		rm.setDealState(RoomRequestNotLateState.分发.ordinal());
 		RoomDmo room = rm.getRoom();
 		int money = room.getMoney();
@@ -83,7 +109,7 @@ public class AdminBo {
 		userDao.save(user);
 		TransactionDetailsDmo tran = new TransactionDetailsDmo();
 		tran.setCreateTime(new Date(currentTime));
-		tran.setDescription("【"+roomName+"】迟到，扣除保证金");
+		tran.setDescription("【" + roomName + "】迟到，扣除保证金");
 		tran.setUser(user);
 		tran.setMoney(0 - money);
 		transactionDetailsDao.save(tran);
@@ -92,7 +118,7 @@ public class AdminBo {
 			UserDmo member = roomMemberDmo.getMember();
 			TransactionDetailsDmo tranDmo = new TransactionDetailsDmo();
 			tranDmo.setCreateTime(new Date(currentTime));
-			tranDmo.setDescription("【"+roomName+"】结束，分得保证金");
+			tranDmo.setDescription("【" + roomName + "】结束，分得保证金");
 			tranDmo.setUser(member);
 			tranDmo.setMoney(addMoney);
 			transactionDetailsDao.save(tranDmo);
@@ -100,19 +126,24 @@ public class AdminBo {
 			userDao.save(member);
 		}
 		room.setRemainingMoney(money - addMoney * roomMembers.size());
-		UserDmo systemUser=this.userDao.findOne(Keys.SYSTEM_ID);
-		systemUser.setAmount(systemUser.getAmount()+room.getRemainingMoney());
+		UserDmo systemUser = this.userDao.findOne(Keys.SYSTEM_ID);
+		systemUser.setAmount(systemUser.getAmount() + room.getRemainingMoney());
 		this.roomDao.save(room);
 		this.roomMemberDao.save(rm);
 	}
 
 	@Transactional(rollbackOn = Throwable.class)
-	public void jieDong(long id) throws Exception {
-		RoomMemberDmo rm = this.roomMemberDao.findOne(id);
-		if (rm.getDealState()!=RoomRequestNotLateState.待处理.ordinal()) {
+	public void jieDong(long id, AdminDmo admin) throws Exception {
+		NotLateReasonDmo reasonDmo = this.notLateReasonDao.findOne(id);
+		RoomMemberDmo rm = this.roomMemberDao.findByMember_IdAndRoom_Id(reasonDmo.getUser().getId(),
+				reasonDmo.getRoom().getId());
+		if (rm.getDealState() != RoomRequestNotLateState.待处理.ordinal()
+				|| reasonDmo.getDealState() != RoomRequestNotLateState.待处理.ordinal()) {
 			log.error("已处理");
 			throw new Exception("已处理");
 		}
+		reasonDmo.setDealState(RoomRequestNotLateState.解冻.ordinal());
+		reasonDmo.setAdmin(admin);
 		int money = rm.getRoom().getMoney();
 		UserDmo user = rm.getMember();
 		user.setAmount(user.getAmount() + money);
@@ -120,11 +151,11 @@ public class AdminBo {
 		this.userDao.save(user);
 		TransactionDetailsDmo tran = new TransactionDetailsDmo();
 		tran.setCreateTime(new Date());
-		tran.setDescription("【"+rm.getRoom().getName()+"】结束，解冻保证金");
+		tran.setDescription("【" + rm.getRoom().getName() + "】结束，解冻保证金");
 		tran.setMoney(money);
 		tran.setUser(user);
 		this.transactionDetailsDao.save(tran);
-		rm.setDealState(RoomRequestNotLateState.返回.ordinal());
+		rm.setDealState(RoomRequestNotLateState.解冻.ordinal());
 		rm.setLockMoney(false);
 		roomMemberDao.save(rm);
 	}

@@ -38,7 +38,27 @@ public class NotLateReasonDmo implements Serializable {
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
+	@ManyToOne()
+	@JoinColumn(name="admin_id",nullable=true)
+	private AdminDmo admin;
+	
+	private int dealState;
+	
+	public AdminDmo getAdmin() {
+		return admin;
+	}
 
+	public void setAdmin(AdminDmo admin) {
+		this.admin = admin;
+	}
+
+	public int getDealState() {
+		return dealState;
+	}
+
+	public void setDealState(int dealState) {
+		this.dealState = dealState;
+	}
 	@ManyToOne
 	@JoinColumn(name = "room_id")
 	private RoomDmo room;

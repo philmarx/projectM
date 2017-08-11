@@ -1,6 +1,7 @@
 package com.yywl.projectT.dao;
 
 import java.sql.ResultSet;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -174,4 +175,14 @@ public class JdbcDao {
 		return list;
 	}
 
+	public List<Map<String,Object>> findLocationAroundBeginTime(long userId,Date beginTime) {
+		StringBuilder sql=new StringBuilder();
+		sql.append("SELECT l.ip,distance_calc(l.longitude,l.latitude,r.longitude,r.latitude)*100 distance,l.send_time sendTime,l.place ");
+		sql.append(" FROM location l inner join room r on l.room_id=r.id  ");
+		sql.append(" where l.user_id=? and l.send_time between ");
+		sql.append(" date_add(?, interval -2 hour) and date_add(?, interval 2 hour) ");
+		sql.append(" order by l.send_time desc ");
+		List<Map<String,Object>> list=this.jdbc.queryForList(sql.toString(), userId,beginTime,beginTime);
+		return list;
+	}
 }

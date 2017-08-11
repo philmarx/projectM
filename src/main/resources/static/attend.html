@@ -48,9 +48,7 @@ header a:HOVER {
 							<th>用户ID</th>
 							<th>用户姓名</th>
 							<th>房间ID</th>
-							<th>房间经度</th>
-							<th>房间纬度</th>
-							<th>状态</th>
+							<th>房间保证金</th>
 							<th>操作</th>
 						</tr>
 					</thead>
@@ -103,22 +101,18 @@ header a:HOVER {
 					var $tbody=$('tbody');
 					$tbody.html('');
 					$.each(json.data.content,function(i,o){
-						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.member.id+'</td>').append('<td>'+o.member.nickname+'</td>');
+						var $tr=$('<tr></tr>').append('<td>'+o.user.id+'</td>').append('<td>'+o.user.nickname+'</td>');
 						$tr.append('<td>'+o.room.id+'</td>');
-						$tr.append('<td>'+o.room.longitude+'</td>').append('<td>'+o.room.latitude+'</td>');
+						$tr.append('<td>'+o.room.money/100+'元</td>');
 						window.data[o.id+'']=o;
 						if(o.dealState==0){
-							$tr.append('<td>待处理</td>');
-							$tr.append('<td><a href="javascript:findLocation('+o.id+')">查看位置</a><a style="margin-left:1em;" href="javascript:findReason('+o.member.id+','+o.room.id+')">查看理由</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
+							$tr.append('<td><a href="javascript:findReason('+o.id+','+o.room.id+','+o.user.id+')">查看</a><a href="javascript:jieDong('+o.id+')" style="margin-right:1em;margin-left:1em;">解冻</a><a href="javascript:fenFa('+o.id+')" >分发</a></td>');
 						}else if(o.dealState==1){
-							$tr.append('<td>分发</td>');
-							$tr.append('<td>已处理</td>')
+							$tr.append('<td><a style="margin-right:1em" href="javascript:findReason('+o.id+','+o.room.id+','+o.user.id+')">查看</a><span>已分发</span></td>');
 						}else if(o.dealState==2){
-							$tr.append('<td>返回</td>');
-							$tr.append('<td>已处理</td>')
+							$tr.append('<td><a style="margin-right:1em" href="javascript:findReason('+o.id+','+o.room.id+','+o.user.id+')">查看</a><span>已解冻</span></td>');
 						}else{
-							$tr.append('<td>错误</td>');
-							$tr.append('<td>已处理</td>')
+							$tr.append('<td><a style="margin-right:1em" href="javascript:findReason('+o.id+','+o.room.id+','+o.user.id+')">查看</a><span>错误</span></td>');
 						}
 						$tbody.append($tr);
 					});
@@ -146,24 +140,28 @@ header a:HOVER {
 			if (!result) {
 				return;
 			}
-			$.post('admin/fenFa',{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},function(json){
-				if(json.success){
-					handler(sessionStorage.getItem('pageNumber'),sessionStorage.getItem('pageSize'));
-					alert('分发成功');
-				}else{
-					alert(json.msg);
+			$.ajax({
+				url:'admin/fenFa',
+				dataType:'json',
+				type:'post',
+				data:{"id":id,"userId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token')},
+				success:function(json){
+					if(json.success){
+						handler(sessionStorage.getItem('pageNumber'),sessionStorage.getItem('pageSize'));
+						alert('分发成功');
+					}else{
+						alert(json.msg);
+					}
+				},error:function (e){
+					alert(e.status + ',' + e.statusText);
 				}
-			},'json');
+			})
+			
 		}
-		function findLocation(id){
-			var obj=window.data[id+''];
-			sessionStorage.setItem('locationUserId',obj.member.id);
-			sessionStorage.setItem('roomId',obj.room.id);
-			window.open('locations.html','_self');
-		}
-		function findReason(userId,roomId){
-			sessionStorage.setItem('notLateRoomId',roomId);
-			sessionStorage.setItem('notLateUserId',userId);
+		function findReason(id,roomId,userId){
+			sessionStorage.setItem('notLateRoomId',roomId),
+			sessionStorage.setItem('notLateUserId',userId)
+			sessionStorage.setItem('notLateId',id);
 			window.open('reason.html','_self');
 		}
 		$(function() {

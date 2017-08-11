@@ -3,6 +3,7 @@ package com.yywl.projectT.web.controller;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -16,12 +17,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.Order;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.yywl.projectT.bean.DistanceConverter;
 import com.yywl.projectT.bean.MD5Util;
 import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bean.ValidatorBean;
@@ -43,7 +47,6 @@ import com.yywl.projectT.dmo.ApplicationDmo;
 import com.yywl.projectT.dmo.ComplaintDmo;
 import com.yywl.projectT.dmo.LocationDmo;
 import com.yywl.projectT.dmo.NotLateReasonDmo;
-import com.yywl.projectT.dmo.RoomMemberDmo;
 import com.yywl.projectT.dmo.SuggestionDmo;
 import com.yywl.projectT.dmo.UserDmo;
 import com.yywl.projectT.dmo.WithdrawalsDmo;
@@ -82,12 +85,12 @@ public class AdminController {
 	NotLateReasonDao noteLateReasonDao;
 
 	@PostMapping("findReason")
-	public Callable<ResultModel> findReason(long loginId, String token, long userId, long roomId) {
+	public Callable<ResultModel> findReason(long loginId, String token, long notLateId) {
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			NotLateReasonDmo dmo = this.noteLateReasonDao.findByUser_IdAndRoom_Id(userId, roomId);
+			NotLateReasonDmo dmo = this.noteLateReasonDao.findOne(notLateId);
 			if (null == dmo) {
-				dmo = new NotLateReasonDmo(null, this.userDao.findOne(userId), null, null, null, null, 0);
+				return new ResultModel(false, "信息不存在", null);
 			}
 			Map<String, Object> map = new HashMap<>();
 			map.put("userId", dmo.getUser().getId());
@@ -99,11 +102,12 @@ public class AdminController {
 			map.put("reason", dmo.getReason());
 			map.put("createTime", dmo.getCreateTime() != null ? dateFormat.format(dmo.getCreateTime()) : "");
 			map.put("photoUrl", dmo.getPhotoUrl());
+			map.put("dealState", dmo.getDealState());
 			return new ResultModel(true, "", map);
 		};
 	}
 
-	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	@PostMapping("findComplaint")
 	public Callable<ResultModel> findComplaint(long loginId, String token, long complaintId) {
@@ -116,8 +120,8 @@ public class AdminController {
 	@PostMapping("fenFa")
 	public Callable<ResultModel> fenFa(long id, long userId, String token) {
 		return () -> {
-			this.adminBo.loginByToken(userId, token);
-			this.adminBo.fenFa(id);
+			AdminDmo admin = this.adminBo.loginByToken(userId, token);
+			this.adminBo.fenFa(id, admin);
 			return new ResultModel();
 		};
 	}
@@ -129,9 +133,9 @@ public class AdminController {
 	public Callable<ResultModel> findAttend(long userId, String token, int page, int size) {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
-			Page<RoomMemberDmo> roomMembers = this.roomMemberDao.findByRequestNotLateAndIsSigned(true, false,
-					new PageRequest(page, size, Direction.DESC, "room_BeginTime"));
-			return new ResultModel(true, null, roomMembers);
+			Pageable pageable = new PageRequest(page, size, Direction.DESC, "createTime");
+			Page<NotLateReasonDmo> reasons = this.noteLateReasonDao.findAll(pageable);
+			return new ResultModel(true, null, reasons);
 		};
 	}
 
@@ -145,30 +149,41 @@ public class AdminController {
 		};
 	}
 
-	@PostMapping("findLocation")
-	public Callable<ResultModel> findLocation(long userId, String token, Long id, int page, int size) {
+	@PostMapping("findLocationByRoom_Id")
+	public Callable<ResultModel> findLocationByRoom_Id(long loginId, String token, long userId, long roomId) {
 		return () -> {
-			this.adminBo.loginByToken(userId, token);
-			if (id == null) {
-				log.error("用户不存在");
-				throw new Exception("用户不存在");
+			this.adminBo.loginByToken(loginId, token);
+			List<Map<String, Object>> list = new LinkedList<>();
+			Order order = new Sort.Order(Direction.DESC, "sendTime");
+			Sort sort = new Sort(order);
+			List<LocationDmo> locations = this.locationDao.findByUser_IdAndRoom_Id(userId, roomId, sort);
+			for (LocationDmo l : locations) {
+				double distance = DistanceConverter.getDistance(l.getLongitude(), l.getLatitude(),
+						l.getRoom().getLongitude(), l.getRoom().getLatitude());
+				Map<String, Object> map = new HashMap<>();
+				map.put("ip", l.getIp());
+				map.put("latitude", l.getLatitude());
+				map.put("longitude", l.getLongitude());
+				map.put("sendTime", dateFormat.format(l.getSendTime()));
+				map.put("distance", String.format("%.2f", distance));
+				map.put("place", l.getPlace());
+				list.add(map);
 			}
-			Pageable pageable = new PageRequest(page, size, Direction.DESC, "sendTime");
-			Page<LocationDmo> locations = this.locationDao.findByUser_Id(id, pageable);
-			return new ResultModel(true, null, locations);
+			return new ResultModel(true, null, list);
 		};
 	}
 
-	@PostMapping("findLocationList")
-	public Callable<ResultModel> findLocationList(long userId, String token, Long id, int page, int size) {
+	@PostMapping("findLocationAroundBeginTime")
+	public Callable<ResultModel> findLocationAroundBeginTime(long loginId, String token, long userId,
+			String beginTime) {
 		return () -> {
-			this.adminBo.loginByToken(userId, token);
-			if (id == null) {
-				log.error("用户不存在");
-				throw new Exception("用户不存在");
+			this.adminBo.loginByToken(loginId, token);
+			Date beginDate = dateFormat.parse(beginTime + ":00");
+			List<Map<String, Object>> list = this.jdbcDao.findLocationAroundBeginTime(userId, beginDate);
+			for (Map<String, Object> map : list) {
+				double distance = (Double) map.get("distance");
+				map.put("distance", String.format("%.2f", distance));
 			}
-			List<Map<String, Object>> list = this.jdbcDao.findLocationList(id, ValidatorBean.page(page),
-					ValidatorBean.size(size));
 			return new ResultModel(true, null, list);
 		};
 	}
@@ -205,8 +220,8 @@ public class AdminController {
 	@Transactional(rollbackOn = Throwable.class)
 	public Callable<ResultModel> jieDong(long userId, String token, long id) {
 		return () -> {
-			this.adminBo.loginByToken(userId, token);
-			this.adminBo.jieDong(id);
+			AdminDmo admin = this.adminBo.loginByToken(userId, token);
+			this.adminBo.jieDong(id, admin);
 			return new ResultModel();
 		};
 	}
