@@ -61,4 +61,6 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	Page<RoomMemberDmo> findByRequestNotLateAndIsSigned(boolean b, boolean c, Pageable pageRequest);
 
+	long countByMember_IdAndRoom_StateInAndIsSigned(Long id, Integer[] states, boolean isSigned);
+
 }

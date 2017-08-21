@@ -29,7 +29,9 @@ import com.yywl.projectT.bean.DistanceConverter;
 import com.yywl.projectT.bean.MD5Util;
 import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bean.ValidatorBean;
+import com.yywl.projectT.bean.enums.ActivityStates;
 import com.yywl.projectT.bo.AdminBo;
+import com.yywl.projectT.bo.RoomBo;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.ApplicationDao;
 import com.yywl.projectT.dao.ComplaintDao;
@@ -47,6 +49,7 @@ import com.yywl.projectT.dmo.ApplicationDmo;
 import com.yywl.projectT.dmo.ComplaintDmo;
 import com.yywl.projectT.dmo.LocationDmo;
 import com.yywl.projectT.dmo.NotLateReasonDmo;
+import com.yywl.projectT.dmo.RoomDmo;
 import com.yywl.projectT.dmo.SuggestionDmo;
 import com.yywl.projectT.dmo.UserDmo;
 import com.yywl.projectT.dmo.WithdrawalsDmo;
@@ -175,12 +178,16 @@ public class AdminController {
 
 	@PostMapping("findLocationAroundBeginTime")
 	public Callable<ResultModel> findLocationAroundBeginTime(long loginId, String token, long userId,
-			String beginTime) {
+			long roomId) {
+	
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			Date beginDate = dateFormat.parse(beginTime + ":00");
-			List<Map<String, Object>> list = this.jdbcDao.findLocationAroundBeginTime(userId, beginDate);
+			RoomDmo room=this.roomDao.findOne(roomId);
+			List<Map<String, Object>> list = this.jdbcDao.findLocationAroundBeginTime(userId, room);
 			for (Map<String, Object> map : list) {
+				if (map.get("distance")==null) {
+					continue;
+				}
 				double distance = (Double) map.get("distance");
 				map.put("distance", String.format("%.2f", distance));
 			}
@@ -302,7 +309,35 @@ public class AdminController {
 			return new ResultModel(true, "", dmo);
 		};
 	}
+	@Autowired
+	RoomBo roomBo;
+	
+	@PostMapping("deleteRoom")
+	public Callable<ResultModel> deleteRoom(long loginId,String token,long roomId){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			RoomDmo room=this.roomDao.findOne(roomId);
+			if (null==room) {
+				throw new Exception("房间id不存在");
+			}
+			if (room.getState()>1) {
+				throw new Exception("房间已开始");
+			}
+			this.roomBo.delete(room);
+			return new ResultModel();
+		};
+	}
 
+	@PostMapping("findRooms")
+	public Callable<ResultModel> findRooms(long loginId,String token,int page,int size){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			Pageable pageable=new PageRequest(ValidatorBean.page(page), ValidatorBean.size(size),Direction.DESC,"beginTime");
+			Page<RoomDmo> rooms=this.roomDao.findByStateAndPrepareTimeIsNull(ActivityStates.新建.ordinal(),pageable);
+			return new ResultModel(true, "", rooms);
+		};
+	}
+	
 	@Autowired
 	WithdrawalsDao withdrawalsDao;
 }

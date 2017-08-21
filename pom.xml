@@ -27,10 +27,10 @@
 	<dependencies>
 		<dependency>
 			<!-- mvn install:install-file -DgroupId=com.alipay -DartifactId=alipay-sdk-java 
-				-Dversion=20170615110434 -Dpackaging=jar -Dfile=alipay-sdk-java20170615110434.jar -->
+				-Dversion=20170725114550 -Dpackaging=jar -Dfile=alipay-sdk-java20170725114550.jar -->
 			<groupId>com.alipay</groupId>
 			<artifactId>alipay-sdk-java</artifactId>
-			<version>20170615110434</version>
+			<version>20170725114550</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-dbcp</groupId>

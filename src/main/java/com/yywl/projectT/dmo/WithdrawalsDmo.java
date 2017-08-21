@@ -30,8 +30,6 @@ public class WithdrawalsDmo implements Serializable {
 
 	private String alipayAccount;
 
-	private String realName;
-
 	private int money;
 
 	private int state;
@@ -65,9 +63,6 @@ public class WithdrawalsDmo implements Serializable {
 	public int getMoney() {
 		return money;
 	}
-	public String getRealName() {
-		return realName;
-	}
 	public int getState() {
 		return state;
 	}
@@ -92,22 +87,18 @@ public class WithdrawalsDmo implements Serializable {
 	public void setMoney(int money) {
 		this.money = money;
 	}
-	public void setRealName(String realName) {
-		this.realName = realName;
-	}
 	public void setState(int state) {
 		this.state = state;
 	}
 	public void setUser(UserDmo user) {
 		this.user = user;
 	}
-	public WithdrawalsDmo(Long id, UserDmo user, String alipayAccount, String realName, int money, int state,
+	public WithdrawalsDmo(Long id, UserDmo user, String alipayAccount, int money, int state,
 			Date createTime, Date dealTime, int dealMoney) {
 		super();
 		this.id = id;
 		this.user = user;
 		this.alipayAccount = alipayAccount;
-		this.realName = realName;
 		this.money = money;
 		this.state = state;
 		this.createTime = createTime;

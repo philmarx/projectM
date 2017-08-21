@@ -35,4 +35,6 @@ public interface RoomDao extends JpaRepository<RoomDmo, Long> {
 
 	long countByBelongCircle_Id(Long id);
 
+	Page<RoomDmo> findByStateAndPrepareTimeIsNull(int state, Pageable pageable);
+
 }
