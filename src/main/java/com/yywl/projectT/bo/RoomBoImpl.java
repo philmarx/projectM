@@ -72,4 +72,12 @@ public class RoomBoImpl implements RoomBo {
 	@Autowired
 	JdbcDao jdbcDao;
 
+	@Override
+	public void delete(RoomDmo room, String reason) {
+		this.jdbc.update("update location set room_id=null where room_id=" + room.getId().longValue());
+		this.jdbc.update("update complaint set room_id=null where room_id=" + room.getId().longValue());
+		this.jdbc.update("delete from not_late_reason where room_id=" + room.getId().longValue());
+		this.moneyTransactionBo.deleteRoom(room,reason);
+	}
+
 }

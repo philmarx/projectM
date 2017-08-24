@@ -46,7 +46,11 @@ header a:HOVER {
 					<thead>
 						<tr>
 							<th>平台</th>
-							<th>版本号</th>
+							<th style="width: 5em;">版本</th>
+							<th style="width: 40em;">下载地址</th>
+							<th>说明</th>
+							<th>是否当前版本</th>
+							<th>是否强制升级</th>
 							<th>修改</th>
 						</tr>
 					</thead>
@@ -70,9 +74,13 @@ header a:HOVER {
 				if (json.success) {
 					var $tbody=$('tbody');
 					$.each(json.data,function(i,o){
-						var $tr=$('<tr></tr>').append('<td>'+o.platform+'</td>');
-						$tr.append('<td id="td"'+o.id+'><input id="input'+o.id+'" value='+o.version+'></td>');
-						$tr.append('<td><a href="javascript:change('+o.id+')">修改</a></td>')
+						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.platform+'</td>');
+						$tr.append('<td><input id="version'+o.id+'" value='+o.version+' /></td>');
+						$tr.append('<td><input style="width: 40em;" id="downUrl'+o.id+'" value='+o.downUrl+' /></td>');
+						$tr.append('<td><input style="width: 40em;" id="message'+o.id+'" value='+o.message+' /></td>');
+						$tr.append('<td><input id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
+						$tr.append('<td><input id="force'+o.id+'" value='+o.force+' /></td>');
+						$tr.append('<td><a href="javascript:change('+o.id+')">修改</a></td>');
 						$tbody.append($tr);
 					});
 				}else{
@@ -85,14 +93,30 @@ header a:HOVER {
 			if (!result) {
 				return;
 			}
-			$.post('admin/changeVersion',{"userId":userId,"token":token,"version":$('#input'+id).val(),"id":id},function(json){
-				if(json.success){
-					var o=json.data;
-					var $td=$('#td'+id);
-					$td.html('<td><input id="input'+o.id+'" value='+o.version+'></td>');
+			var params={"userId":userId,"token":token,"version":$('#version'+id).val(),"current":$('#isCurrent'+id).val(),
+					"id":id,"force":$('#force'+id).val(),"message":$('#message'+id).val(),"downUrl":$('#downUrl'+id).val()};
+			$.ajax({
+				"url":'admin/changeVersionV2',
+				"data":params,
+				"dataType":'json',
+				"type":'post',
+				"success":function(json){
+					if(json.success){
+						var o=json.data;
+						var $tr=$('#tr'+id).empty().append('<td>'+o.platform+'</td>');;
+						$tr.append('<td><input id="version'+o.id+'" value='+o.version+' /></td>');
+						$tr.append('<td><input style="width: 40em;" id="downUrl'+o.id+'" value='+o.downUrl+' /></td>');
+						$tr.append('<td><input style="width: 40em;" id="message'+o.id+'" value='+o.message+' /></td>');
+						$tr.append('<td><input id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
+						$tr.append('<td><input id="force'+o.id+'" value='+o.force+' /></td>');
+						$tr.append('<td><a href="javascript:change('+o.id+')">修改</a></td>');
+					}
+					alert(json.msg);
+				},
+				"error":function(e){
+					alert(e.status+','+e.statusText);
 				}
-				alert(json.msg);
-			},'json');
+			});
 		}
 		$(function() {
 			if(!userId||!token){

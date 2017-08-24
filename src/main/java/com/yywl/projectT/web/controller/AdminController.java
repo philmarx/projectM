@@ -99,6 +99,8 @@ public class AdminController {
 			map.put("userId", dmo.getUser().getId());
 			map.put("nickname", dmo.getUser().getNickname());
 			map.put("certifierId", dmo.getCertifierId());
+			map.put("userPhone", dmo.getUser().getPhone());
+			map.put("userRealName", dmo.getUser().getRealName());
 			UserDmo certifier = this.userDao.findOne(dmo.getCertifierId());
 			map.put("certifier", certifier);
 			map.put("room", dmo.getRoom());
@@ -250,7 +252,7 @@ public class AdminController {
 				throw new Exception("密码不正确或密码不正确");
 			}
 			admin.setToken(UUID.randomUUID().toString());
-			admin.setExpire(new Date(System.currentTimeMillis() + 15 * 60 * 1000));
+			admin.setExpire(new Date(System.currentTimeMillis() + 30 * 60 * 1000));
 			this.adminDao.save(admin);
 			return new ResultModel(true, "", admin);
 		};
@@ -301,6 +303,25 @@ public class AdminController {
 		};
 	}
 
+	@PostMapping("changeVersionV2")
+	public Callable<ResultModel> changeVersionV2(long userId, String token, int id, String version,String downUrl,String message,String force,String current) {
+		return () -> {
+			this.adminBo.loginByToken(userId, token);
+			if (StringUtils.isEmpty(version)) {
+				log.error("version不能为空");
+				return new ResultModel(false, "version不能为空", null);
+			}
+			ApplicationDmo applicationDmo = this.applicationDao.findOne(id);
+			applicationDmo.setIsCurrent("true".equalsIgnoreCase(current));
+			applicationDmo.setDownUrl(downUrl);
+			applicationDmo.setMessage(message);
+			applicationDmo.setForce("true".equalsIgnoreCase(force));
+			applicationDmo.setVersion(version);
+			this.applicationDao.save(applicationDmo);
+			return new ResultModel(true, "修改成功", applicationDmo);
+		};
+	}
+	
 	@PostMapping("findSuggestion")
 	public Callable<ResultModel> findSuggestion(long suggestionId, long loginId, String token) {
 		return () -> {
@@ -313,7 +334,7 @@ public class AdminController {
 	RoomBo roomBo;
 	
 	@PostMapping("deleteRoom")
-	public Callable<ResultModel> deleteRoom(long loginId,String token,long roomId){
+	public Callable<ResultModel> deleteRoom(long loginId,String token,long roomId,String reason){
 		return ()->{
 			this.adminBo.loginByToken(loginId, token);
 			RoomDmo room=this.roomDao.findOne(roomId);
@@ -323,7 +344,7 @@ public class AdminController {
 			if (room.getState()>1) {
 				throw new Exception("房间已开始");
 			}
-			this.roomBo.delete(room);
+			this.roomBo.delete(room,reason);
 			return new ResultModel();
 		};
 	}

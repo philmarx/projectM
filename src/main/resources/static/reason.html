@@ -39,40 +39,48 @@ header a:HOVER {
 				<table class="table table-hover">
 					<tbody>
 						<tr>
-							<td>迟到ID</td>
+							<td>迟到人ID</td>
 							<td id="userId"></td>
-							<td>迟到者昵称</td>
+							<td>迟到人昵称</td>
 							<td id="userNickname"></td>
+							<td>迟到人手机</td>
+							<td id="userPhone"></td>
+							<td>迟到人姓名</td>
+							<td id="userRealName"></td>
 						</tr>
 						<tr>
 							<td>证明人ID</td>
 							<td id="certifierId"></td>
+							<td>证明人昵称</td>
+							<td id="certifierNickname"></td>
 							<td>证明人手机</td>
 							<td id="certifierPhone"></td>
+							<td>证明人姓名</td>
+							<td id="certifierRealName"></td>
 						</tr>
 						<tr>
-							<td>申请时间</td>
-							<td id="createTime" colspan="3"></td>
+							<td colspan="2">申请时间</td>
+							<td id="createTime" colspan="6"></td>
 						</tr>
 						<tr>
 							<td>房间ID</td>
-							<td id="roomId"></td>
+							<td id="roomId" colspan="3"></td>
 							<td>房间名</td>
-							<td id="roomName"></td>
+							<td id="roomName" colspan="3"></td>
 						</tr>
 						<tr>
 							<td>金额</td>
-							<td id="money" colspan="3"></td>
+							<td id="money" colspan="7"></td>
 						</tr>
 						<tr>
 							<td>房间开始时间</td>
-							<td id="roomBeginTime"></td>
+							<td id="roomBeginTime" colspan="3"></td>
 							<td>房间结束时间</td>
-							<td id="roomEndTime"></td>
+							<td id="roomEndTime" colspan="3"></td>
 						</tr>
 						<tr>
 							<td>理由</td>
-							<td id="reason" colspan="3"></td>
+							<td id="reason" colspan="7"></td>
 						</tr>
 					</tbody>
 				</table>
@@ -164,7 +172,6 @@ header a:HOVER {
 					$('#userId').html(json.data.userId);
 					$('#userNickname').html(json.data.nickname);
 					$('#certifierId').html(json.data.certifierId||'无');
-					$('#certifierPhone').html(json.data.certifier?json.data.certifier.phone:'无');
 					$('#roomId').html(json.data.room?json.data.room.id:'');
 					$('#roomName').html(json.data.room?json.data.room.name:'');
 					$('#money').html(json.data.room?json.data.room.money/100+'元':'');
@@ -172,6 +179,13 @@ header a:HOVER {
 					$('#roomEndTime').html(json.data.room?json.data.room.endTime:'');
 					$('#reason').html(json.data.reason);
 					$('#createTime').html(json.data.createTime);
+					$('#userPhone').html(json.data.userPhone);
+					$('#userRealName').html(json.data.userRealName);
+					if(json.data.certifier){
+						$('#certifierPhone').html(json.data.certifier.phone);
+						$('#certifierNickname').html(json.data.certifier.nickname);
+						$('#certifierRealName').html(json.data.certifier.realName);
+					}
 					if(json.data.dealState===0){
 						$('button').show(); 
 					}else{

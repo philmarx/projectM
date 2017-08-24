@@ -15,3 +15,7 @@ function dateTimeFormat(dateNum){
 	var dateString=date.getFullYear()+'-'+repair((date.getMonth()+1))+'-'+repair(date.getDate())+' '+date.getHours()+':'+repair(date.getMinutes())+':'+repair(date.getSeconds());
 	return dateString;
 }
+
+String.prototype.trim=function(){
+     return this.replace(/(^\s*)|(\s*$)/g, '');
+}

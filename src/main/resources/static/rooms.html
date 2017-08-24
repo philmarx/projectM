@@ -116,26 +116,8 @@ header a:HOVER {
 			}, 'json')
 		}
 		function deleteRoom(id){
-			var result=window.confirm("是否确定");
-			if (!result) {
-				return;
-			}
-			$.ajax({
-				url:'admin/deleteRoom',
-				type:'post',
-				dataType:'json',
-				data:{"loginId":sessionStorage.getItem('userId'),"token":sessionStorage.getItem('token'),"roomId":id},
-				success:function(json){
-					if(json.success){
-						alert('解散成功')
-						handler(1,localStorage.getItem('pageMaxSize'));
-						return;
-					}
-					alert(json.msg);
-				},error:function(e){
-					alert(e.status+','+e.statusText);
-				}
-			})
+			window.deleteRoomId=id;
+			window.open('deleteRoom.html','_new','width=600px,height=400px,top=200px,left=600px');
 		}
 		$(function() {
 			load();

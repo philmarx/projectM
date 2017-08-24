@@ -13,11 +13,13 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayFundTransToaccountTransferRequest;
 import com.alipay.api.response.AlipayFundTransToaccountTransferResponse;
+import com.yywl.projectT.bean.JpushBean;
 import com.yywl.projectT.bean.Keys;
 import com.yywl.projectT.bean.component.RongCloudBean;
 import com.yywl.projectT.dao.ComplaintDao;
@@ -110,14 +112,18 @@ public class MoneyTransactionBo {
 					transactionDetailsDao.save(td);
 				}
 			}
+			String msg="";
 			if (roomMemberDmo.getMember().getId().longValue() != room.getManager().getId().longValue()) {
-				try {
-					rongCloud.sendSystemTextMsgToOne(roomMemberDmo.getMember().getId(),
-							new TxtMessage("您加入的房间【" + room.getName() + "】已解散", ""));
-				} catch (Exception e) {
-					log.error(e.getMessage());
-				}
+				msg = "您加入的房间【" + room.getName() + "】已被管理员解散。";
+			} else {
+				msg = "您创建的房间【" + room.getName() + "】已被管理员解散。";
 			}
+			try {
+				rongCloud.sendSystemTextMsgToOne(roomMemberDmo.getMember().getId(), new TxtMessage(msg, ""));
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}
+			JpushBean.push(msg, roomMemberDmo.getMember().getId() + "");
 			roomMemberDao.delete(roomMemberDmo.getId());
 		}
 		try {
@@ -129,7 +135,7 @@ public class MoneyTransactionBo {
 	}
 
 	@Transactional(rollbackOn = Throwable.class)
-	public Map<String,String> withdrawalsV2(WithdrawalsDmo withdrawals) throws Exception {
+	public Map<String, String> withdrawalsV2(WithdrawalsDmo withdrawals) throws Exception {
 		UserDmo user = withdrawals.getUser();
 		int money = withdrawals.getMoney();
 		String alipayAccount = withdrawals.getAlipayAccount();
@@ -144,7 +150,7 @@ public class MoneyTransactionBo {
 				+ "\"remark\":\"后会有期app提现\"" + "  }");
 		AlipayFundTransToaccountTransferResponse response = alipayClient.execute(request);
 		if (response.isSuccess()) {
-			Map<String,String> result=new HashMap<>();
+			Map<String, String> result = new HashMap<>();
 			result.put("orderId", response.getOrderId());
 			result.put("outBizNo", response.getOutBizNo());
 			return result;
@@ -158,5 +164,51 @@ public class MoneyTransactionBo {
 
 	@Autowired
 	WithdrawalsDao withdrawalsDao;
+
+	public void deleteRoom(RoomDmo room, String reason) {
+		String roomName = room.getName();
+		List<ComplaintDmo> complaintDmos = this.complaintDao.findByRoom_Id(room.getId());
+		this.complaintDao.delete(complaintDmos);
+		List<RoomEvaluationDmo> roomEvaluationDmos = this.roomEvaluationDao.findAll();
+		this.roomEvaluationDao.delete(roomEvaluationDmos);
+		List<RoomMemberDmo> roomMembers = roomMemberDao.findByRoom_Id(room.getId());
+		for (RoomMemberDmo roomMemberDmo : roomMembers) {
+			if (room.getMoney() != 0) {
+				if (roomMemberDmo.isReady()) {
+					UserDmo user = roomMemberDmo.getMember();
+					user.setAmount(user.getAmount() + room.getMoney());
+					user.setLockAmount(user.getLockAmount() - room.getMoney());
+					userDao.save(user);
+					TransactionDetailsDmo td = new TransactionDetailsDmo();
+					td.setCreateTime(new Date());
+					td.setDescription("【" + roomName + "】取消，解冻保证金");
+					td.setUser(user);
+					td.setMoney(room.getMoney());
+					transactionDetailsDao.save(td);
+				}
+			}
+			String msg="";
+			if (roomMemberDmo.getMember().getId().longValue() != room.getManager().getId().longValue()) {
+				msg = StringUtils.isEmpty(reason) ? "您加入的房间【" + room.getName() + "】已被管理员解散。"
+						: "您加入的房间【" + room.getName() + "】已被管理员解散，原因是" + reason;
+			} else {
+				msg = StringUtils.isEmpty(reason) ? "您创建的房间【" + room.getName() + "】已被管理员解散。"
+						: "您创建的房间【" + room.getName() + "】已被管理员解散，原因是" + reason;
+			}
+			try {
+				rongCloud.sendSystemTextMsgToOne(roomMemberDmo.getMember().getId(), new TxtMessage(msg, ""));
+			} catch (Exception e) {
+				log.error(e.getMessage());
+			}
+			JpushBean.push(msg, roomMemberDmo.getMember().getId() + "");
+			roomMemberDao.delete(roomMemberDmo.getId());
+		}
+		try {
+			rongCloud.destoryChatRoom(Keys.Room.PREFIX + room.getId());
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
+		roomDao.delete(room.getId());
+	}
 
 }

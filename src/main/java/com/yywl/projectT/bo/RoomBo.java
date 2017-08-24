@@ -10,5 +10,6 @@ public interface RoomBo {
 	 */
 	RoomDmo findOne(Long id);
 
-	public void delete(RoomDmo room);
+	void delete(RoomDmo room);
+	void delete(RoomDmo room,String reason);
 }
