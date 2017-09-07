@@ -196,7 +196,8 @@ public class JdbcDao {
 	}
 
 	public List<Map<String, Object>> findRecommenders(long userId) {
-		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder(),findAllRecommenderSql=new StringBuilder();
+		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder(),
+				findAllRecommenderSql = new StringBuilder();
 		findUserSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
 		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id");
 		findUserSql.append(" where u.recommender_id=? and u.is_init=1");
@@ -223,13 +224,14 @@ public class JdbcDao {
 					// 推荐人数
 					long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, longitude1,
 							longitude2, latitude1, latitude2);
-					long allCount=this.jdbc.queryForObject(findAllRecommenderSql.toString(), Long.class, id);
+					long allCount = this.jdbc.queryForObject(findAllRecommenderSql.toString(), Long.class, id);
 					map.put("allCount", allCount);
 					map.put("recommendCount", recommendCount);
 					return map;
 				});
 		return list;
 	}
+
 	public List<Map<String, Object>> findRecommendersV2(long userId, Date beginTime, Date endTime) {
 		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder();
 		findUserSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
@@ -256,11 +258,14 @@ public class JdbcDao {
 		}
 		findRecommenderSql.append("SELECT count(1) as total FROM  ");
 		findRecommenderSql.append(" (SELECT DISTINCT user_id FROM location ");
-		findRecommenderSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? ");
-		findRecommenderSql.append(" AND is_init=1 AND (init_time between ? and ?)) ");
+		findRecommenderSql.append(
+				" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? AND is_init=1 AND (init_time between ? and ?)) ");
+		findRecommenderSql.append(" AND ((longitude BETWEEN ? AND ?) AND (latitude BETWEEN ? AND ?)) ");
 		findRecommenderSql.append(" GROUP BY udid	) u");
-		StringBuilder findAllRecommenderSql=new StringBuilder();
-		findAllRecommenderSql.append("SELECT count(1) from user where recommender_id=? and is_init=1 and (init_time between ? and ?)");
+
+		StringBuilder findAllRecommenderSql = new StringBuilder();
+		findAllRecommenderSql.append(
+				"SELECT count(1) from user where recommender_id=? and is_init=1 and (init_time between ? and ?)");
 		List<Map<String, Object>> list = this.jdbc.query(findUserSql.toString(), new Object[] { userId },
 				(ResultSet rs, int num) -> {
 					Map<String, Object> map = new HashMap<>();
@@ -280,11 +285,13 @@ public class JdbcDao {
 					for (Map<String, Date> d : dateList) {
 						Date begin = d.get("beginTime");
 						Date end = d.get("endTime");
-						long allCount=jdbc.queryForObject(findAllRecommenderSql.toString(), Long.class,id,begin,end);
-						if (allCount==0) {
+						long allCount = jdbc.queryForObject(findAllRecommenderSql.toString(), Long.class, id, begin,
+								end);
+						if (allCount == 0) {
 							continue;
 						}
-						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin, end);
+						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin,
+								end, longitude1, longitude2, latitude1, latitude2);
 						Map<String, Object> recommand = new HashMap<>();
 						recommand.put("recommendCount", recommendCount);
 						recommand.put("date", Formatter.dateFormatter.format(begin));
@@ -296,6 +303,7 @@ public class JdbcDao {
 				});
 		return list;
 	}
+
 	public List<SpreadUserDmo> findSpreadUsers(int page, int size) {
 		StringBuilder sql = new StringBuilder();
 		sql.append("select id, user_id, longitude1, latitude1, longitude2, latitude2 from spread_user s limit ?,?");
@@ -312,7 +320,5 @@ public class JdbcDao {
 				});
 		return spreadUserDmos;
 	}
-
-
 
 }
