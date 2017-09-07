@@ -89,7 +89,6 @@ header a:HOVER {
 					return;
 				}
 				var $tbody=$('tbody').html('');
-				console.dir(json.data);
 				$.each(json.data,function(i,o){
 					var $tr=$('<tr></tr>');
 					$tr.append('<td>'+o.id+'</td>');
@@ -97,11 +96,17 @@ header a:HOVER {
 					var $ulAllCount=$('<ul type="none" style="margin:0px;"></ul>');
 					var $ulCount=$('<ul type="none" style="margin:0px;"></ul>');
 					var $ulDate=$('<ul type="none" style="margin:0px;"></ul>');
-					$.each(o.recommendList,function(i,o){
-						$ulAllCount.append('<li style="margin:0px;">'+o.allCount+'</li>');
-						$ulCount.append('<li style="margin:0px;">'+o.recommendCount+'</li>');
-						$ulDate.append('<li style="margin:0px;">'+o.date+'</li>')
-					});
+					if (o.recommendList.length) {
+						$.each(o.recommendList,function(i,o){
+							$ulAllCount.append('<li style="margin:0px;">'+o.allCount+'</li>');
+							$ulCount.append('<li style="margin:0px;">'+o.recommendCount+'</li>');
+							$ulDate.append('<li style="margin:0px;">'+o.date+'</li>')
+						});
+					}else{
+						$ulAllCount.append('<li style="margin:0px;">0</li>');
+						$ulCount.append('<li style="margin:0px;">0</li>');
+						$ulDate.append('<li style="margin:0px;">无</li>')
+					}
 					var $tdAllCount=$('<td></td>').append($ulAllCount);
 					$tr.append($tdAllCount);
 					var $tdCount=$('<td></td>').append($ulCount);
