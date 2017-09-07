@@ -196,17 +196,17 @@ public class JdbcDao {
 	}
 
 	public List<Map<String, Object>> findRecommenders(long userId) {
-		StringBuilder outerSql = new StringBuilder(), innerSql = new StringBuilder(),innerSql2=new StringBuilder();
-		outerSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
-		outerSql.append(" from spread_user s inner join user u on s.user_id=u.id");
-		outerSql.append(" where u.recommender_id=? and u.is_init=1");
-		innerSql.append("SELECT count(1) as total FROM  ");
-		innerSql.append(" (SELECT DISTINCT user_id FROM location ");
-		innerSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? AND is_init=1) ");
-		innerSql.append(" AND ((longitude BETWEEN ? AND ?) AND (latitude BETWEEN ? AND ?)) ");
-		innerSql.append(" GROUP BY udid	) u");
-		innerSql2.append("SELECT count(1) from user where recommender_id=? and is_init=1");
-		List<Map<String, Object>> list = this.jdbc.query(outerSql.toString(), new Object[] { userId },
+		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder(),findAllRecommenderSql=new StringBuilder();
+		findUserSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
+		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id");
+		findUserSql.append(" where u.recommender_id=? and u.is_init=1");
+		findRecommenderSql.append("SELECT count(1) as total FROM  ");
+		findRecommenderSql.append(" (SELECT DISTINCT user_id FROM location ");
+		findRecommenderSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? AND is_init=1) ");
+		findRecommenderSql.append(" AND ((longitude BETWEEN ? AND ?) AND (latitude BETWEEN ? AND ?)) ");
+		findRecommenderSql.append(" GROUP BY udid	) u");
+		findAllRecommenderSql.append("SELECT count(1) from user where recommender_id=? and is_init=1");
+		List<Map<String, Object>> list = this.jdbc.query(findUserSql.toString(), new Object[] { userId },
 				(ResultSet rs, int num) -> {
 					Map<String, Object> map = new HashMap<>();
 					long id = rs.getLong("id");
@@ -221,9 +221,9 @@ public class JdbcDao {
 					map.put("latitude1", latitude1);
 					map.put("latitude2", latitude2);
 					// 推荐人数
-					long recommendCount = jdbc.queryForObject(innerSql.toString(), Long.class, id, longitude1,
+					long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, longitude1,
 							longitude2, latitude1, latitude2);
-					long allCount=this.jdbc.queryForObject(innerSql2.toString(), Long.class, id);
+					long allCount=this.jdbc.queryForObject(findAllRecommenderSql.toString(), Long.class, id);
 					map.put("allCount", allCount);
 					map.put("recommendCount", recommendCount);
 					return map;
@@ -231,10 +231,10 @@ public class JdbcDao {
 		return list;
 	}
 	public List<Map<String, Object>> findRecommendersV2(long userId, Date beginTime, Date endTime) {
-		StringBuilder outerSql = new StringBuilder(), innerSql = new StringBuilder();
-		outerSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
-		outerSql.append(" from spread_user s inner join user u on s.user_id=u.id");
-		outerSql.append(" where u.recommender_id=? and u.is_init=1");
+		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder();
+		findUserSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
+		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id");
+		findUserSql.append(" where u.recommender_id=? and u.is_init=1");
 		List<Map<String, Date>> dateList = new LinkedList<>();
 		Calendar cBegin = Calendar.getInstance(), cEnd = Calendar.getInstance();
 		cBegin.setTime(beginTime);
@@ -254,14 +254,14 @@ public class JdbcDao {
 			dateList.add(map);
 			cBegin.set(Calendar.DAY_OF_YEAR, cBegin.get(Calendar.DAY_OF_YEAR) + 1);
 		}
-		innerSql.append("SELECT count(1) as total FROM  ");
-		innerSql.append(" (SELECT DISTINCT user_id FROM location ");
-		innerSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? ");
-		innerSql.append(" AND is_init=1 AND (init_time between ? and ?)) ");
-		innerSql.append(" GROUP BY udid	) u");
-		StringBuilder innerSql2=new StringBuilder();
-		innerSql2.append("SELECT count(1) from user where recommender_id=? and is_init=1 and (init_time between ? and ?)");
-		List<Map<String, Object>> list = this.jdbc.query(outerSql.toString(), new Object[] { userId },
+		findRecommenderSql.append("SELECT count(1) as total FROM  ");
+		findRecommenderSql.append(" (SELECT DISTINCT user_id FROM location ");
+		findRecommenderSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? ");
+		findRecommenderSql.append(" AND is_init=1 AND (init_time between ? and ?)) ");
+		findRecommenderSql.append(" GROUP BY udid	) u");
+		StringBuilder findAllRecommenderSql=new StringBuilder();
+		findAllRecommenderSql.append("SELECT count(1) from user where recommender_id=? and is_init=1 and (init_time between ? and ?)");
+		List<Map<String, Object>> list = this.jdbc.query(findUserSql.toString(), new Object[] { userId },
 				(ResultSet rs, int num) -> {
 					Map<String, Object> map = new HashMap<>();
 					long id = rs.getLong("id");
@@ -280,11 +280,11 @@ public class JdbcDao {
 					for (Map<String, Date> d : dateList) {
 						Date begin = d.get("beginTime");
 						Date end = d.get("endTime");
-						long allCount=jdbc.queryForObject(innerSql2.toString(), Long.class,id,begin,end);
+						long allCount=jdbc.queryForObject(findAllRecommenderSql.toString(), Long.class,id,begin,end);
 						if (allCount==0) {
 							continue;
 						}
-						long recommendCount = jdbc.queryForObject(innerSql.toString(), Long.class, id, begin, end);
+						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin, end);
 						Map<String, Object> recommand = new HashMap<>();
 						recommand.put("recommendCount", recommendCount);
 						recommand.put("date", Formatter.dateFormatter.format(begin));
