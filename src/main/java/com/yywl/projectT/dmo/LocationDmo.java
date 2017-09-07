@@ -29,7 +29,34 @@ public class LocationDmo implements Serializable{
 	@JoinColumn(name="user_id")
 	private UserDmo user;
 	
+	private double longitude;
+	
+	/**
+	 * 手机标识
+	 */
+	private String udid;
+	
+	public String getUdid() {
+		return udid;
+	}
+	public void setUdid(String udid) {
+		this.udid = udid;
+	}
+	/**
+	 * 用户发送位置的ip地址
+	 */
 	private String ip;
+	
+	public String getIp() {
+		return ip;
+	}
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
+	private double latitude;
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date sendTime;
 	
 	private String place;
 	
@@ -39,21 +66,6 @@ public class LocationDmo implements Serializable{
 	public void setPlace(String place) {
 		this.place = place;
 	}
-	
-	public String getIp() {
-		return ip;
-	}
-	public void setIp(String ip) {
-		this.ip = ip;
-	}
-	private double longitude;
-	
-	private double latitude;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
-	private Date sendTime;
-	
 	@ManyToOne
 	@JoinColumn(name="room_id",nullable=true)
 	private RoomDmo room;

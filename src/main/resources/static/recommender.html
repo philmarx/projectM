@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<script type="text/javascript"
+	src="plugins/jquery1.11.3.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+
+header a {
+	color: white;
+	font-size: 1.5em;
+	margin-left: 2em;
+	text-decoration: none;
+}
+
+header a:HOVER {
+	text-decoration: underline;
+}
+</style>
+</head>
+<body>
+	<header
+		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;height: 5em;">
+		<a href="userLogin.html" style="float: right; margin-right: 2em;">登录</a>
+	</header>
+		<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-12">
+				<h3>推荐人统计</h3>
+				<input type="date" id="beginTimeStr"/>-<input id="endTimeStr" type="date"/> <button onclick="search()">查询</button>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>推荐人ID</th>
+							<th>推荐人姓名</th>
+							<th>推荐总数</th>
+							<th>有效推荐数量</th>
+							<th>日期</th>
+						</tr>
+					</thead>
+					<tbody>
+						
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<ul id="pagination"></ul>
+			</div>
+		</div>
+	</div>
+	<script>
+		
+		var Params = {
+			"userId" : sessionStorage.getItem('userId'),
+			"token" : sessionStorage.getItem('token')
+		}
+		function search(){
+			Params.beginTimeStr=$('#beginTimeStr').val();
+			Params.endTimeStr=$('#endTimeStr').val();
+			if (!Params.beginTimeStr||!Params.endTimeStr) {
+				alert('请选择日期')
+				return;
+			}
+			var beginTime=stringToDate(Params.beginTimeStr);
+			var endTime=stringToDate(Params.endTimeStr);
+			if (beginTime.getTime()>endTime.getTime()) {
+				alert('开始日期必须小于结束日期')
+				return;
+			}
+			$.post('user/findRecommendersV2',Params,function(json){
+				if(!json.success){
+					alert(json.msg);
+					return;
+				}
+				var $tbody=$('tbody').html('');
+				console.dir(json.data);
+				$.each(json.data,function(i,o){
+					var $tr=$('<tr></tr>');
+					$tr.append('<td>'+o.id+'</td>');
+					$tr.append('<td>'+o.nickname+'</td>');
+					var $ulAllCount=$('<ul type="none" style="margin:0px;"></ul>');
+					var $ulCount=$('<ul type="none" style="margin:0px;"></ul>');
+					var $ulDate=$('<ul type="none" style="margin:0px;"></ul>');
+					$.each(o.recommendList,function(i,o){
+						$ulAllCount.append('<li style="margin:0px;">'+o.allCount+'</li>');
+						$ulCount.append('<li style="margin:0px;">'+o.recommendCount+'</li>');
+						$ulDate.append('<li style="margin:0px;">'+o.date+'</li>')
+					});
+					var $tdAllCount=$('<td></td>').append($ulAllCount);
+					$tr.append($tdAllCount);
+					var $tdCount=$('<td></td>').append($ulCount);
+					$tr.append($tdCount);
+					var $tdDate=$('<td></td>').append($ulDate);
+					$tr.append($tdCount).append($tdDate);
+					$tbody.append($tr);
+				});
+				
+			},'json');
+	
+		}
+		function load(){
+			if (!Params.userId||!Params.token) {
+				location.href='login2.html';
+				return;
+			}
+			if (sessionStorage.getItem('isSuper')!=='true') {
+				$('#isSuper').hide();
+			}
+			$.post('user/findRecommenders',Params,function(json){
+				if(!json.success){
+					alert(json.msg);
+					return;
+				}
+				var $tbody=$('tbody');
+				$.each(json.data,function(i,o){
+					var $tr=$('<tr></tr>');
+					$tr.append('<td>'+o.id+'</td>');
+					$tr.append('<td>'+o.nickname+'</td>');
+					$tr.append('<td>'+o.allCount+'</td>');
+					$tr.append('<td>'+o.recommendCount+'</td>');
+					$tr.append('<td>所有</td>');
+					$tbody.append($tr);
+				});
+				
+			},'json');
+		}
+		$(function(){
+			load();
+		});
+	</script>
+</body>
+</html>

@@ -38,8 +38,10 @@ import com.yywl.projectT.dao.ComplaintDao;
 import com.yywl.projectT.dao.JdbcDao;
 import com.yywl.projectT.dao.LocationDao;
 import com.yywl.projectT.dao.NotLateReasonDao;
+import com.yywl.projectT.dao.PropTypeDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;
+import com.yywl.projectT.dao.SpreadUserDao;
 import com.yywl.projectT.dao.SuggestionDao;
 import com.yywl.projectT.dao.TransactionDetailsDao;
 import com.yywl.projectT.dao.UserDao;
@@ -49,7 +51,9 @@ import com.yywl.projectT.dmo.ApplicationDmo;
 import com.yywl.projectT.dmo.ComplaintDmo;
 import com.yywl.projectT.dmo.LocationDmo;
 import com.yywl.projectT.dmo.NotLateReasonDmo;
+import com.yywl.projectT.dmo.PropTypeDmo;
 import com.yywl.projectT.dmo.RoomDmo;
+import com.yywl.projectT.dmo.SpreadUserDmo;
 import com.yywl.projectT.dmo.SuggestionDmo;
 import com.yywl.projectT.dmo.UserDmo;
 import com.yywl.projectT.dmo.WithdrawalsDmo;
@@ -82,10 +86,77 @@ public class AdminController {
 	ComplaintDao complaintDao;
 
 	@Autowired
+	PropTypeDao propTypeDao;
+
+	@Autowired
 	SuggestionDao suggestionDao;
 
 	@Autowired
 	NotLateReasonDao noteLateReasonDao;
+
+	@PostMapping("spreadUser/add")
+	public Callable<ResultModel> addSpreadUser(long loginId, String token, long userId, double longitude1,
+			double longitude2,double latitude1,double latitude2) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			this.adminBo.addSpreadUser(userId,longitude1,longitude2,latitude1,latitude2);
+			return new ResultModel();
+		};
+	}
+	@PostMapping("spreadUser/update")
+	public Callable<ResultModel> updateSpreadUser(long loginId, String token, long id,long userId, double longitude1,
+			double longitude2,double latitude1,double latitude2) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			this.adminBo.updateSpreadUser(id,userId,longitude1,longitude2,latitude1,latitude2);
+			return new ResultModel();
+		};
+	}
+	@PostMapping("spreadUser/remove")
+	public Callable<ResultModel> removeSpreadUser(long loginId, String token, long id) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			this.spreadUserDao.delete(id);
+			return new ResultModel();
+		};
+	}
+
+	@PostMapping("findPropTypes")
+	public Callable<ResultModel> findPropTypes(long loginId, String token) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			List<PropTypeDmo> list = this.propTypeDao.findAll(new Sort(Direction.ASC, "uniqueId"));
+			return new ResultModel(true, "", list);
+		};
+	}
+
+	@PostMapping("photoType/remove")
+	public Object removePhotoType(long loginId, String token, int id) throws Exception {
+		this.adminBo.loginByToken(loginId, token);
+		this.propTypeDao.delete(id);
+		return new ResultModel();
+	}
+
+	@PostMapping("addPhotoType")
+	public Object addPhotoType(long loginId, String token, String name, String title, String description, int money,
+			int badge, String photoUrl, int uniqueId) throws Exception {
+		this.adminBo.loginByToken(loginId, token);
+		PropTypeDmo dmo = new PropTypeDmo(null, uniqueId, name, title, photoUrl, description, badge, money);
+		this.propTypeDao.save(dmo);
+		return new ResultModel();
+	}
+
+	@PostMapping("updatePhotoType")
+	public Object updatePhotoType(long loginId, int id, String token, String name, String title, String description,
+			int money, int badge, String photoUrl, int uniqueId) throws Exception {
+		this.adminBo.loginByToken(loginId, token);
+		if (!this.propTypeDao.exists(id)) {
+			return new ResultModel(false, "id不存在", null);
+		}
+		PropTypeDmo dmo = new PropTypeDmo(id, uniqueId, name, title, photoUrl, description, badge, money);
+		this.propTypeDao.save(dmo);
+		return new ResultModel();
+	}
 
 	@PostMapping("findReason")
 	public Callable<ResultModel> findReason(long loginId, String token, long notLateId) {
@@ -179,15 +250,14 @@ public class AdminController {
 	}
 
 	@PostMapping("findLocationAroundBeginTime")
-	public Callable<ResultModel> findLocationAroundBeginTime(long loginId, String token, long userId,
-			long roomId) {
-	
+	public Callable<ResultModel> findLocationAroundBeginTime(long loginId, String token, long userId, long roomId) {
+
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			RoomDmo room=this.roomDao.findOne(roomId);
+			RoomDmo room = this.roomDao.findOne(roomId);
 			List<Map<String, Object>> list = this.jdbcDao.findLocationAroundBeginTime(userId, room);
 			for (Map<String, Object> map : list) {
-				if (map.get("distance")==null) {
+				if (map.get("distance") == null) {
 					continue;
 				}
 				double distance = (Double) map.get("distance");
@@ -304,7 +374,8 @@ public class AdminController {
 	}
 
 	@PostMapping("changeVersionV2")
-	public Callable<ResultModel> changeVersionV2(long userId, String token, int id, String version,String downUrl,String message,String force,String current) {
+	public Callable<ResultModel> changeVersionV2(long userId, String token, int id, String version, String downUrl,
+			String message, String force, String current) {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
 			if (StringUtils.isEmpty(version)) {
@@ -321,7 +392,7 @@ public class AdminController {
 			return new ResultModel(true, "修改成功", applicationDmo);
 		};
 	}
-	
+
 	@PostMapping("findSuggestion")
 	public Callable<ResultModel> findSuggestion(long suggestionId, long loginId, String token) {
 		return () -> {
@@ -330,35 +401,55 @@ public class AdminController {
 			return new ResultModel(true, "", dmo);
 		};
 	}
+
 	@Autowired
 	RoomBo roomBo;
-	
+
 	@PostMapping("deleteRoom")
-	public Callable<ResultModel> deleteRoom(long loginId,String token,long roomId,String reason){
-		return ()->{
+	public Callable<ResultModel> deleteRoom(long loginId, String token, long roomId, String reason) {
+		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			RoomDmo room=this.roomDao.findOne(roomId);
-			if (null==room) {
+			RoomDmo room = this.roomDao.findOne(roomId);
+			if (null == room) {
 				throw new Exception("房间id不存在");
 			}
-			if (room.getState()>1) {
+			if (room.getState() > 1) {
 				throw new Exception("房间已开始");
 			}
-			this.roomBo.delete(room,reason);
+			this.roomBo.delete(room, reason);
 			return new ResultModel();
 		};
 	}
 
 	@PostMapping("findRooms")
-	public Callable<ResultModel> findRooms(long loginId,String token,int page,int size){
-		return ()->{
+	public Callable<ResultModel> findRooms(long loginId, String token, int page, int size) {
+		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			Pageable pageable=new PageRequest(ValidatorBean.page(page), ValidatorBean.size(size),Direction.DESC,"beginTime");
-			Page<RoomDmo> rooms=this.roomDao.findByStateAndPrepareTimeIsNull(ActivityStates.新建.ordinal(),pageable);
+			Pageable pageable = new PageRequest(ValidatorBean.page(page), ValidatorBean.size(size), Direction.DESC,
+					"beginTime");
+			Page<RoomDmo> rooms = this.roomDao.findByStateAndPrepareTimeIsNull(ActivityStates.新建.ordinal(), pageable);
 			return new ResultModel(true, "", rooms);
 		};
 	}
-	
+
+	@Autowired
+	SpreadUserDao spreadUserDao;
+
+	@PostMapping("findSpreadUsers")
+	public Callable<ResultModel> findSpreadUsers(long loginId, String token, int page, int size) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			Map<String, Object> map = new HashMap<>();
+			long totalElements = this.spreadUserDao.count();
+			double totalPages = Math.ceil(totalElements * 1.0 / size);
+			List<SpreadUserDmo> content = this.jdbcDao.findSpreadUsers(ValidatorBean.page(page),
+					ValidatorBean.size(size));
+			map.put("totalPages", totalPages);
+			map.put("content", content);
+			return new ResultModel(true, "", map);
+		};
+	}
+
 	@Autowired
 	WithdrawalsDao withdrawalsDao;
 }

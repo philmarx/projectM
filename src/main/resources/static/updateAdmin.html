@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>删除房间</title>
+<meta charset="UTF-8">
+<script type="text/javascript" src="plugins/jquery1.11.3.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+</style>
+</head>
+<body>
+	<h3 style="text-align: center;">修改信息</h3>
+	<form>
+		<table>
+			<tr>
+				<td>ID:</td>
+				<td><input id="id" readonly="readonly"></td>
+			</tr>
+			<tr>
+				<td>username:</td>
+				<td><input id="username"></td>
+			</tr>
+			<tr>
+				<td>名字:</td>
+				<td><input id="name"></td>
+			</tr>
+			<tr>
+				<td>密码:</td>
+				<td><input id="password" type="password"></td>
+			</tr>
+		</table>
+		<button type="button" style="display: block; margin: 0 auto;"
+			class="btn btn-default" onclick="submitForm()">修改</button>
+	</form>
+	<script>
+		$(function() {
+			load();
+		});
+		function submitForm() {
+			var result = window.confirm("是否确定");
+			if (!result) {
+				window.close();
+				return;
+			}
+			var params={"loginId":sessionStorage.getItem('userId'),
+					"token":sessionStorage.getItem('token'),
+					"adminId":window.opener.adminId,
+					"username":$('#username').val().trim(),
+					"name":$('#name').val().trim(),
+					"password":$('#password').val().trim()
+			};
+			$.ajax({
+				url:'super/updateAdmin',
+				type:'post',
+				dataType:'json',
+				data:params,
+				success:function(json){
+					if(json.success){
+						alert('操作成功');
+						window.opener.handler(1,localStorage.getItem('pageMaxSize'));
+						window.close();
+						return;
+					}
+					alert(json.msg);
+				},error:function(e){
+					alert(e.status+','+e.statusText);
+				}
+			})
+		}
+		function load() {
+			var params={"loginId":sessionStorage.getItem('userId'),
+					"token":sessionStorage.getItem('token'),
+					"adminId":window.opener.adminId
+			};
+			$.post('super/findAdmin',params,function(json){
+				if(!json.success){
+					alert(json.msg);
+					return;
+				}
+				var o=json.data;
+				$('#id').val(o.id);
+				$('#username').val(o.username);
+				$('#name').val(o.name);
+			},'json');
+		}
+	</script>
+</body>
+</html>

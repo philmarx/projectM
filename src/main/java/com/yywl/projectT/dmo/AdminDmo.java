@@ -26,6 +26,37 @@ public class AdminDmo implements Serializable{
 	@JsonIgnore
 	private String password;
 	
+	private String name;
+	
+	
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setSuper(boolean isSuper) {
+		this.isSuper = isSuper;
+	}
+
+	private boolean enable=true;
+
+	private boolean isSuper;
+	
+	public boolean getIsSuper() {
+		return isSuper;
+	}
+
+	public boolean isEnable() {
+		return enable;
+	}
+
+	public void setEnable(boolean enable) {
+		this.enable = enable;
+	}
+
 	private String token;
 	
 	@Temporal(TemporalType.TIMESTAMP)

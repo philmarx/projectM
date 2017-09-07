@@ -32,7 +32,11 @@ header a:HOVER {
 	<header
 		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
 		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
-		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="version.html">查看版本号</a><a href="rooms.html">解散房间</a><a href="login.html" style="float: right; margin-right: 2em;">登录</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="version.html">查看版本号</a>
+		<a href="rooms.html">解散房间</a><a href="props.html">查看道具</a>
+		<a href="spreadUsers.html">查看推广员</a>
+		<a href="manage.html" id="isSuper">管理管理员</a>
+		<a href="login.html" style="float: right; margin-right: 2em;">登录</a>
 	</header>
 	<div class="container-fluid">
 		<div class="row">
@@ -70,6 +74,9 @@ header a:HOVER {
 		var userId=sessionStorage.getItem('userId');
 		var token=sessionStorage.getItem('token');
 		function load(){
+			if (sessionStorage.getItem('isSuper')!=='true') {
+				$('#isSuper').hide();
+			}
 			$.post('admin/findApplications',{"userId":userId,"token":token},function(json){
 				if (json.success) {
 					var $tbody=$('tbody');
@@ -77,7 +84,7 @@ header a:HOVER {
 						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.platform+'</td>');
 						$tr.append('<td><input id="version'+o.id+'" value='+o.version+' /></td>');
 						$tr.append('<td><input style="width: 40em;" id="downUrl'+o.id+'" value='+o.downUrl+' /></td>');
-						$tr.append('<td><input style="width: 40em;" id="message'+o.id+'" value='+o.message+' /></td>');
+						$tr.append('<td><textarea cols="10" rows="3" style="width: 40em;" id="message'+o.id+'" >'+o.message+'</textarea></td>');
 						$tr.append('<td><input id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
 						$tr.append('<td><input id="force'+o.id+'" value='+o.force+' /></td>');
 						$tr.append('<td><a href="javascript:change('+o.id+')">修改</a></td>');

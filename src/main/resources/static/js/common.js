@@ -1,4 +1,4 @@
-localStorage.setItem('pageMaxSize',15);
+localStorage.setItem('pageMaxSize',10);
 window.photoUrlPrefix='http://tomeet-app-files.oss-cn-hangzhou.aliyuncs.com/user/';
 window.photoUrlSuffix='?x-oss-process=image/resize,m_lfit,w_200,h_200';
 
@@ -19,3 +19,8 @@ function dateTimeFormat(dateNum){
 String.prototype.trim=function(){
      return this.replace(/(^\s*)|(\s*$)/g, '');
 }
+
+function stringToDate(fDate){  
+    var fullDate = fDate.split("-");  
+    return new Date(fullDate[0], fullDate[1]-1, fullDate[2], 0, 0, 0);  
+} 

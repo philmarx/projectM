@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<script type="text/javascript" src="plugins/jquery1.11.3.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+
+header a {
+	color: white;
+	font-size: 1.5em;
+	margin-left: 2em;
+	text-decoration: none;
+}
+
+header a:HOVER {
+	text-decoration: underline;
+}
+</style>
+</head>
+<body>
+	<header
+		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
+		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a
+			href="version.html">查看版本号</a><a href="rooms.html">解散房间</a><a href="props.html">查看道具</a>
+		<a href="spreadUsers.html">查看推广员</a> 
+		<a href="manage.html" id="isSuper">管理管理员</a>
+		<a	href="login.html" style="float: right; margin-right: 2em;">登录</a>
+	</header>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-12">
+				<h3>查看道具</h3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>道具ID</th>
+							<th>唯一标识(不能重复)</th>
+							<th>别名</th>
+							<th>标签</th>
+							<th>描述</th>
+							<th>叶子</th>
+							<th>金额(分)</th>
+							<th>路径</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<img src="" id="photo"/>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function add(){
+			var result = window.confirm("是否确定");
+			if (!result) {
+				window.close();
+				return;
+			}
+			var params={"loginId":sessionStorage.getItem('userId'),
+					"token":sessionStorage.getItem('token')};
+			params.uniqueId=$('#uniqueId').val();
+			params.name=$('#name').val();
+			params.title=$('#title').val();
+			params.description=$('#description').val();
+			params.badge=$('#badge').val()||0;
+			params.money=$('#money').val()||0;
+			params.photoUrl=$('#photoUrl').val();
+			$.post('admin/addPhotoType',params,function(json){
+				if (!json.success) {
+					alert(json.msg);
+					return;
+				}
+				load();
+				alert('添加成功');
+			},'json');
+		}
+		function load() {
+			if (sessionStorage.getItem('isSuper')!=='true') {
+				$('#isSuper').hide();
+			}
+			var userId=sessionStorage.getItem('userId');
+			if(!userId){
+				location.href='login.html';
+				return;
+			}
+			var params = {
+				"loginId" : userId,
+				"token" : sessionStorage.getItem('token')
+			}
+			$.post('admin/findPropTypes', params, function(json) {
+				if (json.success) {
+					var $tbody=$('tbody').html('');
+					$.each(json.data,function(i,o){
+						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.id+'</td>').append('<td><input id="uniqueId'+o.id+'" value="'+o.uniqueId+'"/></td>');
+						$tr.append('<td><input id="name'+o.id+'" value="'+o.name+'"/></td>').append('<td><input id="title'+o.id+'" value="'+o.title+'"/></td>');
+						$tr.append('<td><input id="description'+o.id+'" value="'+o.description+'"/></td>').append('<td><input id="badge'+o.id+'" value="'+o.badge+'"/></td>');
+						$tr.append('<td><input id="money'+o.id+'" value="'+o.money+'"/></td>').append('<td><input id="photoUrl'+o.id+'" value="'+o.photoUrl+'"/></td>');
+						var $td=$('<td></td>').append('<a href="javascript:lookPhoto('+o.id+')" style="margin-right:10px;">查看图片</a>');
+						$td.append('<a href="javascript:update('+o.id+')"  style="margin-right:10px;">修改</a>');
+						$td.append('<a href="javascript:remove('+o.id+')">删除</a>');
+						$tr.append($td);
+						$tbody.append($tr);
+					});
+					var $tr=$('<tr></tr>').append('<td></td>').append('<td><input id="uniqueId" /></td>');
+					$tr.append('<td><input id="name"/></td>').append('<td><input id="title"/></td>');
+					$tr.append('<td><input id="description"/></td>').append('<td><input id="badge"/></td>');
+					$tr.append('<td><input id="money"/></td>').append('<td><input id="photoUrl" /></td>');
+					var $td=$('<td></td>').append('<a href="javascript:lookPhoto()" style="margin-right:10px;">查看图片</a>');
+					$td.append('<a href="javascript:add()">添加</a>');
+					$tr.append($td);
+					$tbody.append($tr);
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		function remove(id){
+			var result = window.confirm("是否确定");
+			if (!result) {
+				window.close();
+				return;
+			}
+			var params={"loginId":sessionStorage.getItem('userId'),
+					"token":sessionStorage.getItem('token')};
+			params.id=id;
+			$.post('admin/photoType/remove',params,function(json){
+				if(json.success){
+					load();
+					alert('删除成功');
+				}else{
+					alert(json.msg);
+				}
+			},'json');
+		}
+		
+		function lookPhoto(){
+			if (arguments.length==1) {
+				var src=$('#photoUrl'+arguments[0]).val();
+				$('#photo').attr('src',src);
+				return;
+			}
+			if (arguments.length==0) {
+				var src=$('#photoUrl').val();
+				$('#photo').attr('src',src);
+				return;
+			}
+		}
+		function update(id){
+			var result = window.confirm("是否确定");
+			if (!result) {
+				window.close();
+				return;
+			}
+			var params={"loginId":sessionStorage.getItem('userId'),
+					"token":sessionStorage.getItem('token')};
+			params.id=id;
+			params.uniqueId=$('#uniqueId'+id).val();
+			params.name=$('#name'+id).val();
+			params.title=$('#title'+id).val();
+			params.description=$('#description'+id).val();
+			params.badge=$('#badge'+id).val()||0;
+			params.money=$('#money'+id).val()||0;
+			params.photoUrl=$('#photoUrl'+id).val();
+			$.post('admin/updatePhotoType',params,function(json){
+				if (!json.success) {
+					alert(json.msg);
+					return;
+				}
+				load();
+				alert('修改成功');
+			},'json');
+		}
+		
+		$(function() {
+			load();
+		});
+	</script>
+</body>
+</body>
+</html>

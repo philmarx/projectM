@@ -13,9 +13,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.yywl.projectT.bean.Formatter;
+import com.yywl.projectT.bean.GsonFactory;
 
 @Entity
 @Table(name = "user")
@@ -30,20 +31,55 @@ public class UserDmo implements Serializable {
 	@JsonIgnore
 	private String token;
 
+	/**
+	 * 是否是超级用户(超级用户加入和创建房间不受限制)
+	 */
+	private boolean isSuperUser;
+
+	public boolean isSuperUser() {
+		return isSuperUser;
+	}
+
+	public void setSuperUser(boolean isSuperUser) {
+		this.isSuperUser = isSuperUser;
+	}
+
+	/**
+	 * 账号
+	 */
+	private String account;
+	
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
+	}
+
 	@JsonIgnore
 	private String password;
 
 	private String nickname = "";
 
+	
 	private Integer amount = 0;
 
 	private String realName;
-	
+
+	@Transient
+	private boolean isVip;
+
 	/**
 	 * 徽章
 	 */
 	private int badge;
 
+	/**
+	 * 推荐者ID
+	 */
+	private long recommenderId=-1L;
+	
 	@Column(name = "lock_amount")
 	private Integer lockAmount = 0;
 
@@ -52,9 +88,9 @@ public class UserDmo implements Serializable {
 	private String idCard;
 
 	private String phone;
-	
+
 	private boolean authorized;
-	
+
 	@Column(name = "qq_uid")
 	@JsonIgnore
 	private String qqUid;
@@ -74,27 +110,30 @@ public class UserDmo implements Serializable {
 
 	private String labels;
 
-	private String avatarSignature="";
-	
+	private String avatarSignature = "";
+
 	@Temporal(TemporalType.DATE)
 	private Date birthday;
-
-	public Date getBirthday() {
-		return birthday;
-	}
-
-	public void setBirthday(Date birthday) {
-		this.birthday = birthday;
-	}
 	public UserDmo() {
 		super();
+		this.recommenderId=-1L;
 	}
 
 	public UserDmo(Long id) {
 		super();
 		this.id = id;
+		this.recommenderId=-1L;
 	}
-	
+
+	public void addLabel(String label) {
+		Set<String> labels = this.getLabels();
+		if (labels==null) {
+			labels=new HashSet<>();
+		}
+		labels.add(label);
+		this.setLabels(labels);
+	}
+
 	public Integer getAmount() {
 		return amount;
 	}
@@ -105,6 +144,10 @@ public class UserDmo implements Serializable {
 
 	public int getBadge() {
 		return badge;
+	}
+
+	public Date getBirthday() {
+		return birthday;
 	}
 
 	public Boolean getGender() {
@@ -119,14 +162,17 @@ public class UserDmo implements Serializable {
 		return idCard;
 	}
 
-
 	public Boolean getIsInit() {
 		return isInit;
 	}
 
+	public boolean getIsVip() {
+		return isVip;
+	}
+
 	public Set<String> getLabels() {
 		@SuppressWarnings("unchecked")
-		Set<String> list = Formatter.gson.fromJson(labels, Set.class);
+		Set<String> list = GsonFactory.gson.fromJson(labels==null?"":labels, Set.class);
 		return list == null ? new HashSet<String>() : list;
 	}
 
@@ -144,6 +190,10 @@ public class UserDmo implements Serializable {
 
 	public String getPhone() {
 		return phone;
+	}
+
+	public long getRecommenderId() {
+		return recommenderId;
 	}
 
 	public String getQqUid() {
@@ -170,6 +220,12 @@ public class UserDmo implements Serializable {
 		return authorized;
 	}
 
+	public void removeLabel(String label) {
+		Set<String> labels = this.getLabels();
+		labels.remove(label);
+		this.setLabels(labels);
+	}
+
 	public void setAmount(Integer amount) {
 		this.amount = amount;
 	}
@@ -186,10 +242,13 @@ public class UserDmo implements Serializable {
 		this.badge = badge;
 	}
 
+	public void setBirthday(Date birthday) {
+		this.birthday = birthday;
+	}
+
 	public void setGender(Boolean gender) {
 		this.gender = gender;
 	}
-
 
 	public void setId(Long id) {
 		this.id = id;
@@ -203,8 +262,12 @@ public class UserDmo implements Serializable {
 		this.isInit = isInit;
 	}
 
+	public void setIsVip(boolean isVip) {
+		this.isVip = isVip;
+	}
+
 	public void setLabels(Set<String> labels) {
-		this.labels = Formatter.gson.toJson(labels);
+		this.labels = GsonFactory.gson.toJson(labels);
 	}
 
 	public void setLockAmount(Integer lockAmount) {
@@ -221,6 +284,10 @@ public class UserDmo implements Serializable {
 
 	public void setPhone(String phone) {
 		this.phone = phone;
+	}
+
+	public void setRecommenderId(long presenterId) {
+		this.recommenderId = presenterId;
 	}
 
 	public void setQqUid(String qqUid) {

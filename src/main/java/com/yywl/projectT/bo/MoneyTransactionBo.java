@@ -38,6 +38,7 @@ import com.yywl.projectT.dmo.TransactionDetailsDmo;
 import com.yywl.projectT.dmo.UserDmo;
 import com.yywl.projectT.dmo.WithdrawalsDmo;
 
+import io.rong.messages.CmdMsgMessage;
 import io.rong.messages.TxtMessage;
 
 @Service
@@ -91,6 +92,12 @@ public class MoneyTransactionBo {
 	 */
 	@Transactional(rollbackOn = Throwable.class)
 	public void deleteRoom(RoomDmo room) {
+		try {
+			rongCloud.sendMessageToChatRoom(Keys.RONGCLOUD_SYSTEM_ID, room.getId(),
+					new CmdMsgMessage(Keys.RongCloud.CMD_MSG_ROOM_DISSOLVE, ""));
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
 		String roomName = room.getName();
 		List<ComplaintDmo> complaintDmos = this.complaintDao.findByRoom_Id(room.getId());
 		this.complaintDao.delete(complaintDmos);
@@ -166,6 +173,12 @@ public class MoneyTransactionBo {
 	WithdrawalsDao withdrawalsDao;
 
 	public void deleteRoom(RoomDmo room, String reason) {
+		try {
+			rongCloud.sendMessageToChatRoom(Keys.RONGCLOUD_SYSTEM_ID, room.getId(),
+					new CmdMsgMessage(Keys.RongCloud.CMD_MSG_ROOM_DISSOLVE, ""));
+		} catch (Exception e) {
+			log.error(e.getMessage());
+		}
 		String roomName = room.getName();
 		List<ComplaintDmo> complaintDmos = this.complaintDao.findByRoom_Id(room.getId());
 		this.complaintDao.delete(complaintDmos);
