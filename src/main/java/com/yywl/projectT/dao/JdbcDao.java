@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.yywl.projectT.bean.Formatter;
+import com.yywl.projectT.bean.Keys;
 import com.yywl.projectT.bean.RandomLabels;
 import com.yywl.projectT.dmo.RoomDmo;
 import com.yywl.projectT.dmo.SpreadUserDmo;
@@ -319,6 +320,76 @@ public class JdbcDao {
 					return dmo;
 				});
 		return spreadUserDmos;
+	}
+
+	public List<Map<String, Object>> findRecommendUsers(long recommendId, Date date)
+			throws Exception {
+		String sql1 = "select id,user_id,longitude1,longitude2,latitude1,latitude2 from spread_user where user_id="
+				+ recommendId;
+		List<SpreadUserDmo> spreadList = jdbc.query(sql1, (ResultSet rs, int num) -> {
+			SpreadUserDmo dmo = new SpreadUserDmo();
+			dmo.setId(rs.getLong("id"));
+			dmo.setUserId(rs.getLong("user_id"));
+			dmo.setLongitude1(rs.getDouble("longitude1"));
+			dmo.setLongitude2(rs.getDouble("longitude2"));
+			dmo.setLatitude1(rs.getDouble("latitude1"));
+			dmo.setLatitude2(rs.getDouble("latitude2"));
+			return dmo;
+		});
+		if (spreadList.isEmpty()) {
+			throw new Exception("推荐人不是推广员");
+		}
+		SpreadUserDmo spreadUser = spreadList.get(0);
+		StringBuilder sql2 = new StringBuilder();
+		sql2.append("select u.id,u.nickname,u.phone,!ISNULL(u.wx_uid) weixinExists, ");
+		sql2.append("!ISNULL(u.qq_uid) qqExists,u.real_name,u.birthday,u.account,count(l.id) loginTimes ");
+		sql2.append("from user u left join location l on u.id=l.user_id and l.room_id=? ");
+		sql2.append("where u.recommender_id=? and u.is_init=1 and (u.init_time BETWEEN ? and ?) ");
+		sql2.append("group by u.id  ");
+		Calendar end = Calendar.getInstance();
+		end.setTime(date);
+		end.set(Calendar.HOUR_OF_DAY, 23);
+		end.set(Calendar.HOUR, 23);
+		end.set(Calendar.MINUTE, 59);
+		end.set(Calendar.SECOND, 59);
+		end.set(Calendar.MILLISECOND, 999);
+		Date startDate = date, endDate = end.getTime();
+		String sql3 = "select count(1) from location l where l.user_id=? and (l.longitude between ? and ?) and (l.latitude between ? and ?)";
+		String sql4="select DISTINCT udid from location where udid is not null and udid !='' and user_id=?";
+		List<Map<String, Object>> list = jdbc.query(sql2.toString(),
+				new Object[] { Keys.Room.loginRoomId, recommendId, startDate, endDate},
+				(ResultSet rs, int num) -> {
+					Map<String, Object> m = new HashMap<>();
+					long id = rs.getLong("id");
+					m.put("nickname", rs.getString("nickname"));// 昵称
+					m.put("phone", rs.getString("phone"));// 手机
+					m.put("belongCity", null);// 归属地
+					m.put("weixinExists", rs.getBoolean("weixinExists"));// 是否绑定微信
+					m.put("qqExists", rs.getBoolean("qqExists"));// 是否绑定QQ
+					m.put("realName", rs.getString("real_name"));// 实名认证
+					m.put("birthday", rs.getDate("birthday"));// 生日
+					m.put("account", rs.getString("account"));// 账户
+					m.put("loginTimes", rs.getInt("loginTimes"));// 登录次数
+					Integer sendCount = jdbc.queryForObject(sql3, new Object[] { id, spreadUser.getLongitude1(),
+							spreadUser.getLongitude2(), spreadUser.getLatitude1(), spreadUser.getLatitude2() },
+							Integer.class);
+					m.put("isInRange", sendCount>0);//是否在范围之内
+					List<String> udids=jdbc.queryForList(sql4,String.class,id);
+					if (udids.isEmpty()) {
+						m.put("hasOther", false);//设备是否有其它账户
+					}else {
+						StringBuilder sql5Builder=new StringBuilder("");
+						for (String udid : udids) {
+							sql5Builder.append(",'"+udid+"'");
+						}
+						String sql5=sql5Builder.toString().replaceFirst(",", "");
+						String sql="select count(1) from (select DISTINCT user_id from location where udid in ("+sql5+"))u;";
+						int count=jdbc.queryForObject(sql, Integer.class);
+						m.put("hasOther", count>1);//设备是否有其它账户
+					}
+					return m;
+				});
+		return list;
 	}
 
 }

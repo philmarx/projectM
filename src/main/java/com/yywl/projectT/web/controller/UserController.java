@@ -15,47 +15,63 @@ import com.yywl.projectT.bean.Formatter;
 import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bo.UserBo;
 import com.yywl.projectT.dao.JdbcDao;
+import com.yywl.projectT.dao.UserDao;
 import com.yywl.projectT.dmo.UserDmo;
+
 @RestController
 @RequestMapping("user")
 public class UserController {
-	
+
 	@Autowired
 	UserBo userBo;
-	
+
 	@Autowired
 	JdbcDao jdbcDao;
-	
+
 	@PostMapping("findRecommenders")
-	public Callable<ResultModel> findRecommenders(long userId,String token){
-		return()->{
+	public Callable<ResultModel> findRecommenders(long userId, String token) {
+		return () -> {
 			userBo.loginByToken(userId, token);
-			List<Map<String,Object>> list=this.jdbcDao.findRecommenders(userId);
-			return new ResultModel(true,"",list);
+			List<Map<String, Object>> list = this.jdbcDao.findRecommenders(userId);
+			return new ResultModel(true, "", list);
 		};
 	}
-	
+
 	@PostMapping("findRecommendersV2")
-	public Callable<ResultModel> findRecommendersV2(long userId,String token,String beginTimeStr,String endTimeStr){
-		return ()->{
+	public Callable<ResultModel> findRecommendersV2(long userId, String token, String beginTimeStr, String endTimeStr) {
+		return () -> {
 			userBo.loginByToken(userId, token);
-			Date beginTime=Formatter.dateFormatter.parse(beginTimeStr);
-			Date endTime=Formatter.dateFormatter.parse(endTimeStr);
-			List<Map<String,Object>> list=this.jdbcDao.findRecommendersV2(userId,beginTime,endTime);
-			return new ResultModel(true,"",list);
+			Date beginTime = Formatter.dateFormatter.parse(beginTimeStr);
+			Date endTime = Formatter.dateFormatter.parse(endTimeStr);
+			List<Map<String, Object>> list = this.jdbcDao.findRecommendersV2(userId, beginTime, endTime);
+			return new ResultModel(true, "", list);
 		};
 	}
-	
+
 	@PostMapping("login")
-	public Callable<ResultModel> login(String phone,String password){
-		return ()->{
-			UserDmo user=this.userBo.loginByPassword(phone, password);
-			Map<String,Object> map=new HashMap<>();
+	public Callable<ResultModel> login(String phone, String password) {
+		return () -> {
+			UserDmo user = this.userBo.loginByPassword(phone, password);
+			Map<String, Object> map = new HashMap<>();
 			map.put("id", user.getId());
 			map.put("nickname", user.getNickname());
 			map.put("account", user.getAccount());
 			map.put("token", user.getToken());
-			return new ResultModel(true,"",map);
+			return new ResultModel(true, "", map);
+		};
+	}
+
+	@Autowired
+	UserDao userDao;
+
+	@PostMapping("findRecommendUsers")
+	public Callable<ResultModel> findRecommendUsers(long userId, String token, long recommendId, String date) {
+		return () -> {
+			this.userBo.loginByToken(userId, token);
+			Date objDate=Formatter.dateFormatter.parse(date);
+			List<Map<String, Object>> list = this.jdbcDao.findRecommendUsers(recommendId,
+					objDate);
+			return new ResultModel(true, "", list);
 		};
 	}
 }

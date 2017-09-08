@@ -188,6 +188,11 @@ public class Keys {
 		 * 活动地点的有效范围
 		 */
 		public static final int DISTANCE = 300;
+		
+		/**
+		 * 用于统计登录次数
+		 */
+		public static final Long loginRoomId=10910L;
 	}
 
 	/**

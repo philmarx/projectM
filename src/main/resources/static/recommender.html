@@ -31,13 +31,14 @@ header a:HOVER {
 <body>
 	<header
 		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;height: 5em;">
+		<a href="recommender.html">统计</a>
 		<a href="userLogin.html" style="float: right; margin-right: 2em;">登录</a>
 	</header>
 		<div class="container-fluid">
 		<div class="row">
 			<div class="col-lg-12">
 				<h3>推荐人统计</h3>
-				<input type="date" id="beginTimeStr"/>-<input id="endTimeStr" type="date"/> <button onclick="search()">查询</button>
+				<input type="date" id="beginTimeStr" />-<input id="endTimeStr" type="date" /> <button onclick="search()">查询</button>
 			</div>
 		</div>
 		<div class="row">
@@ -50,6 +51,7 @@ header a:HOVER {
 							<th>推荐总数</th>
 							<th>有效推荐数量</th>
 							<th>日期</th>
+							<th>查看</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -58,14 +60,8 @@ header a:HOVER {
 				</table>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-lg-12">
-				<ul id="pagination"></ul>
-			</div>
-		</div>
 	</div>
 	<script>
-		
 		var Params = {
 			"userId" : sessionStorage.getItem('userId'),
 			"token" : sessionStorage.getItem('token')
@@ -83,6 +79,10 @@ header a:HOVER {
 				alert('开始日期必须小于结束日期')
 				return;
 			}
+			if(beginTime.getFullYear()!==endTime.getFullYear()){
+				alert('暂不支持跨年查询')
+				return;
+			}
 			$.post('user/findRecommendersV2',Params,function(json){
 				if(!json.success){
 					alert(json.msg);
@@ -93,35 +93,58 @@ header a:HOVER {
 					var $tr=$('<tr></tr>');
 					$tr.append('<td>'+o.id+'</td>');
 					$tr.append('<td>'+o.nickname+'</td>');
-					var $ulAllCount=$('<ul type="none" style="margin:0px;"></ul>');
-					var $ulCount=$('<ul type="none" style="margin:0px;"></ul>');
-					var $ulDate=$('<ul type="none" style="margin:0px;"></ul>');
+					var $ulAllCount=$('<ul style="margin:0px;list-style-type:none;"></ul>');
+					var $ulCount=$('<ul style="margin:0px;list-style-type:none;"></ul>');
+					var $ulDate=$('<ul style="margin:0px;list-style-type:none;"></ul>');
+					var $ulA=$('<ul style="margin:0px;list-style-type:none;"></ul>');
+					var id=o.id;
 					if (o.recommendList.length) {
 						$.each(o.recommendList,function(i,o){
 							$ulAllCount.append('<li style="margin:0px;">'+o.allCount+'</li>');
 							$ulCount.append('<li style="margin:0px;">'+o.recommendCount+'</li>');
 							$ulDate.append('<li style="margin:0px;">'+o.date+'</li>')
+							var params=id+'a'+o.date;
+							$ulA.append('<li style="margin:0px;""><a  href="javascript:find(\''+params+'\')">查看</a></li>');
 						});
 					}else{
 						$ulAllCount.append('<li style="margin:0px;">0</li>');
 						$ulCount.append('<li style="margin:0px;">0</li>');
 						$ulDate.append('<li style="margin:0px;">无</li>')
+						$ulA.append('<li style="margin:0px;><a href="javascript:void(0)">无</a></li>');
 					}
 					var $tdAllCount=$('<td></td>').append($ulAllCount);
 					$tr.append($tdAllCount);
 					var $tdCount=$('<td></td>').append($ulCount);
 					$tr.append($tdCount);
 					var $tdDate=$('<td></td>').append($ulDate);
-					$tr.append($tdCount).append($tdDate);
+					$tr.append($tdDate);
+					var $tdSearch=$('<td></td>').append($ulA);
+					$tr.append($tdSearch);
 					$tbody.append($tr);
 				});
 				
 			},'json');
 	
 		}
+		function find(param){
+			param=param+'';
+			var id;
+			var date;
+			if(param.indexOf('a')>0){
+				var params=param.split('a');
+				id=params[0];
+				date=params[1];
+			}else{
+				id=param;
+				date='';
+			}
+			sessionStorage.setItem('recommendId',id);
+			sessionStorage.setItem('recommendDate',date);
+			location.href='recommendInfo.html';
+		}
 		function load(){
 			if (!Params.userId||!Params.token) {
-				location.href='login2.html';
+				location.href='userLogin.html';
 				return;
 			}
 			if (sessionStorage.getItem('isSuper')!=='true') {
@@ -140,9 +163,9 @@ header a:HOVER {
 					$tr.append('<td>'+o.allCount+'</td>');
 					$tr.append('<td>'+o.recommendCount+'</td>');
 					$tr.append('<td>所有</td>');
+					$tr.append('<td><a href="javascript:alert(\'请选择日期\')">查看</a></td>');
 					$tbody.append($tr);
 				});
-				
 			},'json');
 		}
 		$(function(){
