@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>后会有期后台管理</title>
+<meta charset="UTF-8">
+<script type="text/javascript" src="plugins/jquery1.11.3.min.js"></script>
+<link rel="stylesheet" type="text/css"
+	href="plugins/bootstrap-3.3.7/css/bootstrap.min.css" />
+<script type="text/javascript"
+	src="plugins/bootstrap-3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="plugins/jquery.pagination.js"></script>
+<script type="text/javascript" src="js/common.js"></script>
+<style type="text/css">
+* {
+	margin: 0 auto;
+}
+
+header a {
+	color: white;
+	font-size: 1.5em;
+	margin-left: 2em;
+	text-decoration: none;
+}
+
+header a:HOVER {
+	text-decoration: underline;
+}
+</style>
+</head>
+<body>
+	<header
+		style="background-color: #0077FF; padding-left: 2em; padding-top: 2em; padding-bottom: 1em;">
+		<a href="complaint.html">查看投诉</a> <a href="attend.html">查看申诉没迟到的用户</a>
+		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a
+			href="version.html">查看版本号</a><a href="rooms.html">解散房间</a>
+		<a href="props.html">查看道具</a>
+		<a href="spreadUsers.html">查看推广员</a>
+		<a href="roomsToReady.html">准备房间</a>
+		<a href="manage.html" id="isSuper">管理管理员</a>
+		<a href="login.html" style="float: right; margin-right: 2em;">登录</a>
+	</header>
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-lg-12">
+				<h3>解散房间</h3>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<table class="table table-striped table-hover">
+					<thead>
+						<tr>
+							<th>房间ID</th>
+							<th>房间名</th>
+							<th>开始时间</th>
+							<th>结束时间</th>
+							<th>地点</th>
+							<th>房间人数</th>
+							<th>已加入人数</th>
+							<th>准备</th>
+						</tr>
+					</thead>
+					<tbody>
+
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-lg-12">
+				<ul id="pagination"></ul>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript">
+		function load() {
+			if (sessionStorage.getItem('isSuper')!=='true') {
+				$('#isSuper').hide();
+			}
+			var userId=sessionStorage.getItem('userId');
+			if(!userId){
+				location.href='login.html';
+				return;
+			}
+			var params = {
+				"loginId" : userId,
+				"token" : sessionStorage.getItem('token'),
+				"page" : 0,
+				"size" : localStorage.getItem('pageMaxSize')
+			}
+			$.post('admin/findRooms', params, function(json) {
+				if (json.success) {
+					$('#pagination').pagination(5, json.data.totalPages,
+							localStorage.getItem('pageMaxSize'), handler);
+					handler(1,localStorage.getItem('pageMaxSize'));
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		function handler(pageNumber, pageSize) {
+			var params = {
+				"loginId" : sessionStorage.getItem('userId'),
+				"token" : sessionStorage.getItem('token'),
+				"page" : pageNumber - 1,
+				"size" : pageSize
+			}
+			$.post('admin/findRooms', params, function(json) {
+				if (json.success) {
+					var $tbody=$('tbody');
+					$tbody.html('');
+					$.each(json.data.content,function(i,o){
+						var $tr=$('<tr></tr>').append('<td>'+o.id+'</td>').append('<td>'+o.name+'</td>');
+						$tr.append('<td>'+o.beginTime+'</td>').append('<td>'+o.endTime+'</td>');
+						$tr.append('<td>'+o.place+'</td>').append('<td>'+(o.memberCount||'不限')+'</td>');
+						$tr.append('<td>'+o.joinMember+'</td>');
+						$tr.append('<a href="javascript:ready('+o.id+')">准备</a>')
+						$tbody.append($tr);
+					});
+				} else {
+					alert(json.msg);
+				}
+			}, 'json')
+		}
+		function ready(id){
+			var result = window.confirm("是否确定");
+			if (!result) {
+				window.close();
+				return;
+			}
+			var params = {
+					"userId" : sessionStorage.getItem('userId'),
+					"token" : sessionStorage.getItem('token'),
+					"roomId":id
+			}
+			$.post('admin/room/readyMember',params,function(json){
+				if (json.success) {
+					alert("准备成功");
+				}else{
+					alert(json.msg);
+				}
+			},'json');
+		}
+		$(function() {
+			load();
+		});
+	</script>
+</body>
+</body>
+</html>

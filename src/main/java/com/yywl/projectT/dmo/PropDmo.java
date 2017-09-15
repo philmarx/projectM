@@ -33,6 +33,20 @@ public class PropDmo implements Serializable {
 	private int noteCount;
 
 	/**
+	 * 剩余的观影券
+	 */
+	private int remainMovieTicket;
+	
+	
+	public int getRemainMovieTicket() {
+		return remainMovieTicket;
+	}
+
+	public void setRemainMovieTicket(int remainMovieTicket) {
+		this.remainMovieTicket = remainMovieTicket;
+	}
+
+	/**
 	 * 标签清除卡数量
 	 */
 	private int labelClearCount;

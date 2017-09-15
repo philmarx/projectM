@@ -22,6 +22,20 @@ public class ApplicationDmo implements Serializable {
 	private String version;
 
 	/**
+	 * 是否提醒
+	 */
+	private boolean isRemind;
+	
+	
+	public boolean isRemind() {
+		return isRemind;
+	}
+
+	public void setRemind(boolean isRemind) {
+		this.isRemind = isRemind;
+	}
+
+	/**
 	 * 下载地址
 	 */
 	private String downUrl;

@@ -66,6 +66,9 @@ header a:HOVER {
 			"userId" : sessionStorage.getItem('userId'),
 			"token" : sessionStorage.getItem('token')
 		}
+		function initDate(){
+		    $('input[type=date]').val(dateFormat(new Date));
+		}
 		function search(){
 			Params.beginTimeStr=$('#beginTimeStr').val();
 			Params.endTimeStr=$('#endTimeStr').val();
@@ -140,7 +143,7 @@ header a:HOVER {
 			}
 			sessionStorage.setItem('recommendId',id);
 			sessionStorage.setItem('recommendDate',date);
-			location.href='recommendInfo.html';
+			window.open('recommendInfo.html','_blank');
 		}
 		function load(){
 			if (!Params.userId||!Params.token) {
@@ -170,6 +173,7 @@ header a:HOVER {
 		}
 		$(function(){
 			load();
+			initDate();
 		});
 	</script>
 </body>

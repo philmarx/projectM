@@ -196,18 +196,25 @@ public class JdbcDao {
 		return list;
 	}
 
-	public List<Map<String, Object>> findRecommenders(long userId) {
+	/**
+	 * 查找所有推广员的推荐总数和有效推荐数
+	 */
+	public List<Map<String, Object>> findAllRecommenders(long userId) {
 		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder(),
 				findAllRecommenderSql = new StringBuilder();
-		findUserSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
-		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id");
-		findUserSql.append(" where u.recommender_id=? and u.is_init=1");
-		findRecommenderSql.append("SELECT count(1) as total FROM  ");
-		findRecommenderSql.append(" (SELECT DISTINCT user_id FROM location ");
+		findUserSql.append(
+				"select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2, count(u2.id) count ");
+		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id ");
+		findUserSql.append(" inner join user u2 on u.id=u2.recommender_id and u2.is_init=1 ");
+		findUserSql.append(" where u.recommender_id=? and u.is_init=1 ");
+		findUserSql.append(" group by u.id having count>0 ");
+		findRecommenderSql.append(" SELECT count(DISTINCT user_id) as total FROM location ");
 		findRecommenderSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? AND is_init=1) ");
+		findRecommenderSql.append(
+				" AND user_id IN (SELECT DISTINCT user_id FROM (SELECT user_id,count(DISTINCT user_id) as repe FROM location GROUP BY udid) u WHERE repe=1) ");
 		findRecommenderSql.append(" AND ((longitude BETWEEN ? AND ?) AND (latitude BETWEEN ? AND ?)) ");
-		findRecommenderSql.append(" GROUP BY udid	) u");
-		findAllRecommenderSql.append("SELECT count(1) from user where recommender_id=? and is_init=1");
+		findAllRecommenderSql
+				.append("SELECT count(1) from user where recommender_id=? and is_init=1 and init_time is not null");
 		List<Map<String, Object>> list = this.jdbc.query(findUserSql.toString(), new Object[] { userId },
 				(ResultSet rs, int num) -> {
 					Map<String, Object> map = new HashMap<>();
@@ -233,11 +240,17 @@ public class JdbcDao {
 		return list;
 	}
 
+	/**
+	 * 根据时间范围查找所有推广员的推荐总数和有效推荐数
+	 */
 	public List<Map<String, Object>> findRecommendersV2(long userId, Date beginTime, Date endTime) {
 		StringBuilder findUserSql = new StringBuilder(), findRecommenderSql = new StringBuilder();
-		findUserSql.append("select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2 ");
-		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id");
-		findUserSql.append(" where u.recommender_id=? and u.is_init=1");
+		findUserSql.append(
+				"select u.id,u.nickname,s.longitude1,s.longitude2,s.latitude1,s.latitude2, count(u2.id) count ");
+		findUserSql.append(" from spread_user s inner join user u on s.user_id=u.id ");
+		findUserSql.append(" inner join user u2 on u.id=u2.recommender_id ");
+		findUserSql.append(" where u.recommender_id=? and u.is_init=1 ");
+		findUserSql.append(" group by u.id having count>0 ");
 		List<Map<String, Date>> dateList = new LinkedList<>();
 		Calendar cBegin = Calendar.getInstance(), cEnd = Calendar.getInstance();
 		cBegin.setTime(beginTime);
@@ -257,13 +270,11 @@ public class JdbcDao {
 			dateList.add(map);
 			cBegin.set(Calendar.DAY_OF_YEAR, cBegin.get(Calendar.DAY_OF_YEAR) + 1);
 		}
-		findRecommenderSql.append("SELECT count(1) as total FROM  ");
-		findRecommenderSql.append(" (SELECT DISTINCT user_id FROM location ");
+		findRecommenderSql.append(" SELECT count(DISTINCT user_id) as total FROM location ");
+		findRecommenderSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=?  AND (init_time between ? and ?) ) ");
 		findRecommenderSql.append(
-				" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=? AND is_init=1 AND (init_time between ? and ?)) ");
+				" AND user_id IN (SELECT DISTINCT user_id FROM (SELECT user_id,count(DISTINCT user_id) as repe FROM location GROUP BY udid) u WHERE repe=1) ");
 		findRecommenderSql.append(" AND ((longitude BETWEEN ? AND ?) AND (latitude BETWEEN ? AND ?)) ");
-		findRecommenderSql.append(" GROUP BY udid	) u");
-
 		StringBuilder findAllRecommenderSql = new StringBuilder();
 		findAllRecommenderSql.append(
 				"SELECT count(1) from user where recommender_id=? and is_init=1 and (init_time between ? and ?)");
@@ -291,8 +302,8 @@ public class JdbcDao {
 						if (allCount == 0) {
 							continue;
 						}
-						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin,
-								end, longitude1, longitude2, latitude1, latitude2);
+						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin, end,
+								longitude1, longitude2, latitude1, latitude2);
 						Map<String, Object> recommand = new HashMap<>();
 						recommand.put("recommendCount", recommendCount);
 						recommand.put("date", Formatter.dateFormatter.format(begin));
@@ -322,8 +333,11 @@ public class JdbcDao {
 		return spreadUserDmos;
 	}
 
-	public List<Map<String, Object>> findRecommendUsers(long recommendId, Date date)
-			throws Exception {
+	/**
+	 * 查看日期下推广的用户信息
+	 */
+	public List<Map<String, Object>> findRecommendUsers(long recommendId, Date date) throws Exception {
+		//查看推广员的信息
 		String sql1 = "select id,user_id,longitude1,longitude2,latitude1,latitude2 from spread_user where user_id="
 				+ recommendId;
 		List<SpreadUserDmo> spreadList = jdbc.query(sql1, (ResultSet rs, int num) -> {
@@ -339,7 +353,9 @@ public class JdbcDao {
 		if (spreadList.isEmpty()) {
 			throw new Exception("推荐人不是推广员");
 		}
+		//获取推广员信息
 		SpreadUserDmo spreadUser = spreadList.get(0);
+		//查询推广的用户信息
 		StringBuilder sql2 = new StringBuilder();
 		sql2.append("select u.id,u.nickname,u.phone,!ISNULL(u.wx_uid) weixinExists, ");
 		sql2.append("!ISNULL(u.qq_uid) qqExists,u.real_name,u.birthday,u.account,count(l.id) loginTimes ");
@@ -354,11 +370,12 @@ public class JdbcDao {
 		end.set(Calendar.SECOND, 59);
 		end.set(Calendar.MILLISECOND, 999);
 		Date startDate = date, endDate = end.getTime();
+		//查询登录次数
 		String sql3 = "select count(1) from location l where l.user_id=? and (l.longitude between ? and ?) and (l.latitude between ? and ?)";
-		String sql4="select DISTINCT udid from location where udid is not null and udid !='' and user_id=?";
+		//查询用户登录的设备
+		String sql4 = "select DISTINCT udid from location where udid is not null and udid !='' and user_id=?";
 		List<Map<String, Object>> list = jdbc.query(sql2.toString(),
-				new Object[] { Keys.Room.loginRoomId, recommendId, startDate, endDate},
-				(ResultSet rs, int num) -> {
+				new Object[] { Keys.Room.loginRoomId, recommendId, startDate, endDate }, (ResultSet rs, int num) -> {
 					Map<String, Object> m = new HashMap<>();
 					long id = rs.getLong("id");
 					m.put("nickname", rs.getString("nickname"));// 昵称
@@ -373,19 +390,21 @@ public class JdbcDao {
 					Integer sendCount = jdbc.queryForObject(sql3, new Object[] { id, spreadUser.getLongitude1(),
 							spreadUser.getLongitude2(), spreadUser.getLatitude1(), spreadUser.getLatitude2() },
 							Integer.class);
-					m.put("isInRange", sendCount>0);//是否在范围之内
-					List<String> udids=jdbc.queryForList(sql4,String.class,id);
+					m.put("isInRange", sendCount > 0);// 是否在范围之内
+					List<String> udids = jdbc.queryForList(sql4, String.class, id);
 					if (udids.isEmpty()) {
-						m.put("hasOther", false);//设备是否有其它账户
-					}else {
-						StringBuilder sql5Builder=new StringBuilder("");
+						m.put("hasOther", false);// 设备是否有其它账户
+					} else {
+						//查询该设备内是否有其它用户
+						StringBuilder sql5Builder = new StringBuilder("");
 						for (String udid : udids) {
-							sql5Builder.append(",'"+udid+"'");
+							sql5Builder.append(",'" + udid + "'");
 						}
-						String sql5=sql5Builder.toString().replaceFirst(",", "");
-						String sql="select count(1) from (select DISTINCT user_id from location where udid in ("+sql5+"))u;";
-						int count=jdbc.queryForObject(sql, Integer.class);
-						m.put("hasOther", count>1);//设备是否有其它账户
+						String sql5 = sql5Builder.toString().replaceFirst(",", "");
+						String sql = "select count(1) from (select DISTINCT user_id from location where udid in ("
+								+ sql5 + "))u;";
+						int count = jdbc.queryForObject(sql, Integer.class);
+						m.put("hasOther", count > 1);// 设备是否有其它账户
 					}
 					return m;
 				});

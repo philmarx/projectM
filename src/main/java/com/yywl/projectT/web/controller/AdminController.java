@@ -112,6 +112,21 @@ public class AdminController {
 			return new ResultModel();
 		};
 	}
+	
+	/**
+	 * 管理员设置所有人状态为准备
+	 */
+	@PostMapping("room/readyMember")
+	public Callable<ResultModel> readyMember(long userId,String token,long roomId){
+		return ()->{
+			this.adminBo.loginByToken(userId, token);
+			int fail=this.roomBo.readyMember(roomId);
+			if (fail>0) {
+				return new ResultModel(false,fail+"人观影券不足",null);
+			}
+			return new ResultModel();
+		};
+	}
 	@PostMapping("spreadUser/remove")
 	public Callable<ResultModel> removeSpreadUser(long loginId, String token, long id) {
 		return () -> {
@@ -375,7 +390,7 @@ public class AdminController {
 
 	@PostMapping("changeVersionV2")
 	public Callable<ResultModel> changeVersionV2(long userId, String token, int id, String version, String downUrl,
-			String message, String force, String current) {
+			String message, String force, String current,boolean remind) {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
 			if (StringUtils.isEmpty(version)) {
@@ -388,6 +403,7 @@ public class AdminController {
 			applicationDmo.setMessage(message);
 			applicationDmo.setForce("true".equalsIgnoreCase(force));
 			applicationDmo.setVersion(version);
+			applicationDmo.setRemind(remind);
 			this.applicationDao.save(applicationDmo);
 			return new ResultModel(true, "修改成功", applicationDmo);
 		};

@@ -83,22 +83,23 @@ header a:HOVER {
 				}
 				var $tbody=$('tbody');
 				$.each(json.data,function(i,o){
-					console.dir(o);
 					var $tr=$('<tr></tr>');
 					$tr.append('<td>'+(i+1)+'</td>');
 					$tr.append('<td>'+(o.nickname||'无')+'</td>');
 					$tr.append('<td>'+(o.phone||'无')+'</td>');
 					$tr.append('<td>'+(o.belongCity||'无')+'</td>');
-					$tr.append('<td>'+o.weixinExists+'</td>');
-					$tr.append('<td>'+o.qqExists+'</td>');
+					$tr.append('<td>'+(o.weixinExists?'是':'否')+'</td>');
+					$tr.append('<td>'+(o.qqExists?'是':'否')+'</td>');
 					$tr.append('<td>'+(o.realName||'无')+'</td>');
 					$tr.append('<td>'+(o.birthday||'无')+'</td>');
 					$tr.append('<td>'+(o.account||'无')+'</td>');
 					$tr.append('<td>'+o.loginTimes+'</td>');
-					$tr.append('<td>'+o.isInRange+'</td>');
-					$tr.append('<td>'+o.hasOther+'</td>');
+					$tr.append('<td>'+(o.isInRange?'是':'否')+'</td>');
+					$tr.append('<td>'+(o.hasOther?'重复':'无重复')+'</td>');
 					$tbody.append($tr);
 				});
+				$('td:contains(否)').css('color','red');
+				$('td:contains(重复)').css('color','red');
 			},'json');
 		}
 		$(function(){

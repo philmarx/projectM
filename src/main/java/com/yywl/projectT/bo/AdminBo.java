@@ -107,6 +107,10 @@ public class AdminBo {
 		long currentTime = System.currentTimeMillis();
 		RoomMemberDmo rm = this.roomMemberDao.findByMember_IdAndRoom_Id(reasonDmo.getUser().getId(),
 				reasonDmo.getRoom().getId());
+		RoomDmo room = rm.getRoom();
+		if (room.getState()<ActivityStates.待评价.ordinal()) {
+			throw new Exception("房间还没有结束，不能结算。");
+		}
 		if (rm.getDealState() != RoomRequestNotLateState.待处理.ordinal()
 				|| reasonDmo.getDealState() != RoomRequestNotLateState.待处理.ordinal()) {
 			log.error("已处理");
@@ -122,7 +126,6 @@ public class AdminBo {
 			UserDmo systemUser = this.userDao.findOne(Keys.SYSTEM_ID);
 			String roomName = rm.getRoom().getName();
 			rm.setDealState(RoomRequestNotLateState.分发.ordinal());
-			RoomDmo room = rm.getRoom();
 			int money = room.getMoney();
 			UserDmo user = rm.getMember();
 			user.setLockAmount(user.getLockAmount() - money);
@@ -138,7 +141,6 @@ public class AdminBo {
 		}
 		String roomName = rm.getRoom().getName();
 		rm.setDealState(RoomRequestNotLateState.分发.ordinal());
-		RoomDmo room = rm.getRoom();
 		int money = room.getMoney();
 		UserDmo user = rm.getMember();
 		user.setLockAmount(user.getLockAmount() - money);
@@ -173,6 +175,10 @@ public class AdminBo {
 		NotLateReasonDmo reasonDmo = this.notLateReasonDao.findOne(id);
 		RoomMemberDmo rm = this.roomMemberDao.findByMember_IdAndRoom_Id(reasonDmo.getUser().getId(),
 				reasonDmo.getRoom().getId());
+		RoomDmo room=rm.getRoom();
+		if (room.getState()<ActivityStates.待评价.ordinal()) {
+			throw new Exception("房间还没有结束，不能结算。");
+		}
 		if (rm.getDealState() != RoomRequestNotLateState.待处理.ordinal()
 				|| reasonDmo.getDealState() != RoomRequestNotLateState.待处理.ordinal()) {
 			log.error("已处理");

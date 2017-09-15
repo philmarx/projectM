@@ -16,6 +16,19 @@ function dateTimeFormat(dateNum){
 	return dateString;
 }
 
+function dateFormat(dateNum){
+	function repair(minute){
+		var str=minute+'';
+		if(str.length===1){
+			str='0'+str;
+		}
+		return str;
+	}
+	var date=new Date(dateNum);
+	var dateString=date.getFullYear()+'-'+repair((date.getMonth()+1))+'-'+repair(date.getDate());
+	return dateString;
+}
+
 String.prototype.trim=function(){
      return this.replace(/(^\s*)|(\s*$)/g, '');
 }

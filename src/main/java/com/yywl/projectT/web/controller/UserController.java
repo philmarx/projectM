@@ -28,15 +28,29 @@ public class UserController {
 	@Autowired
 	JdbcDao jdbcDao;
 
+	/**
+	 * 查找所有推广员的推荐总数和有效推荐数
+	 * @param userId
+	 * @param token
+	 * @return
+	 */
 	@PostMapping("findRecommenders")
 	public Callable<ResultModel> findRecommenders(long userId, String token) {
 		return () -> {
 			userBo.loginByToken(userId, token);
-			List<Map<String, Object>> list = this.jdbcDao.findRecommenders(userId);
+			List<Map<String, Object>> list = this.jdbcDao.findAllRecommenders(userId);
 			return new ResultModel(true, "", list);
 		};
 	}
 
+	/**
+	 * 根据时间范围查找所有推广员的推荐总数和有效推荐数
+	 * @param userId
+	 * @param token
+	 * @param beginTimeStr
+	 * @param endTimeStr
+	 * @return
+	 */
 	@PostMapping("findRecommendersV2")
 	public Callable<ResultModel> findRecommendersV2(long userId, String token, String beginTimeStr, String endTimeStr) {
 		return () -> {
@@ -64,6 +78,14 @@ public class UserController {
 	@Autowired
 	UserDao userDao;
 
+	/**
+	 * 查看日期下推广的用户信息
+	 * @param userId
+	 * @param token
+	 * @param recommendId
+	 * @param date
+	 * @return
+	 */
 	@PostMapping("findRecommendUsers")
 	public Callable<ResultModel> findRecommendUsers(long userId, String token, long recommendId, String date) {
 		return () -> {

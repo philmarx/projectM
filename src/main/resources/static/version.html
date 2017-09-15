@@ -35,6 +35,7 @@ header a:HOVER {
 		<a href="suggestions.html">查看建议</a><a href="withdrawals.html">查看提现</a><a href="version.html">查看版本号</a>
 		<a href="rooms.html">解散房间</a><a href="props.html">查看道具</a>
 		<a href="spreadUsers.html">查看推广员</a>
+		<a href="roomsToReady.html">准备房间</a>
 		<a href="manage.html" id="isSuper">管理管理员</a>
 		<a href="login.html" style="float: right; margin-right: 2em;">登录</a>
 	</header>
@@ -55,6 +56,7 @@ header a:HOVER {
 							<th>说明</th>
 							<th>是否当前版本</th>
 							<th>是否强制升级</th>
+							<th>是否提醒</th>
 							<th>修改</th>
 						</tr>
 					</thead>
@@ -85,8 +87,9 @@ header a:HOVER {
 						$tr.append('<td><input id="version'+o.id+'" value='+o.version+' /></td>');
 						$tr.append('<td><input style="width: 40em;" id="downUrl'+o.id+'" value='+o.downUrl+' /></td>');
 						$tr.append('<td><textarea cols="10" rows="3" style="width: 40em;" id="message'+o.id+'" >'+o.message+'</textarea></td>');
-						$tr.append('<td><input id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
-						$tr.append('<td><input id="force'+o.id+'" value='+o.force+' /></td>');
+						$tr.append('<td><input style="width:3em;" id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
+						$tr.append('<td><input style="width:3em;" id="force'+o.id+'" value='+o.force+' /></td>');
+						$tr.append('<td><input style="width:3em;" id="remind'+o.id+'" value='+o.remind+' /></td>');
 						$tr.append('<td><a href="javascript:change('+o.id+')">修改</a></td>');
 						$tbody.append($tr);
 					});
@@ -101,7 +104,7 @@ header a:HOVER {
 				return;
 			}
 			var params={"userId":userId,"token":token,"version":$('#version'+id).val(),"current":$('#isCurrent'+id).val(),
-					"id":id,"force":$('#force'+id).val(),"message":$('#message'+id).val(),"downUrl":$('#downUrl'+id).val()};
+					"id":id,"force":$('#force'+id).val(),"message":$('#message'+id).val(),"downUrl":$('#downUrl'+id).val(),"remind":$('#remind'+id).val()};
 			$.ajax({
 				"url":'admin/changeVersionV2',
 				"data":params,
@@ -113,9 +116,10 @@ header a:HOVER {
 						var $tr=$('#tr'+id).empty().append('<td>'+o.platform+'</td>');;
 						$tr.append('<td><input id="version'+o.id+'" value='+o.version+' /></td>');
 						$tr.append('<td><input style="width: 40em;" id="downUrl'+o.id+'" value='+o.downUrl+' /></td>');
-						$tr.append('<td><input style="width: 40em;" id="message'+o.id+'" value='+o.message+' /></td>');
-						$tr.append('<td><input id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
-						$tr.append('<td><input id="force'+o.id+'" value='+o.force+' /></td>');
+						$tr.append('<td><textarea cols="10" rows="3" style="width: 40em;" id="message'+o.id+'" >'+o.message+'</textarea></td>');
+						$tr.append('<td><input  style="width:3em;" id="isCurrent'+o.id+'" value='+o.isCurrent+' /></td>');
+						$tr.append('<td><input  style="width:3em;" id="force'+o.id+'" value='+o.force+' /></td>');
+						$tr.append('<td><input  style="width:3em;" id="remind'+o.id+'" value='+o.remind+' /></td>');
 						$tr.append('<td><a href="javascript:change('+o.id+')">修改</a></td>');
 					}
 					alert(json.msg);
