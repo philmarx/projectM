@@ -38,13 +38,13 @@ public class WithdrawalsBo {
 	WithdrawalsDao withdrawalsDao;
 
 	@Transactional(rollbackOn = Throwable.class)
-	public void agree(long id) throws Exception {
+	public void agree(long id,long userId) throws Exception {
 		WithdrawalsDmo withdrawals = this.withdrawalsDao.findOne(id);
 		if (withdrawals == null) {
 			log.error("订单不存在");
 			throw new Exception("订单不存在");
 		}
-		if (withdrawals.getState() != WithdrawalsEnum.处理中.ordinal()) {
+		if (withdrawals.getState() ==WithdrawalsEnum.提现失败.ordinal()||withdrawals.getState()==WithdrawalsEnum.提现成功.ordinal()) {
 			log.error("该订单已处理");
 			throw new Exception("该订单已处理");
 		}
@@ -84,13 +84,14 @@ public class WithdrawalsBo {
 		this.transactionDetailsDao.save(tran);
 		PayOrderDmo order = new PayOrderDmo();
 		order.setNotifyTime(new Date());
-		order.setOutTradeNo(withdrawals.getUser().getId()+"e" + System.currentTimeMillis());
+		order.setOutTradeNo(withdrawals.getUser().getId()+"d" + System.currentTimeMillis());
 		order.setRefundAmount(money);
 		order.setTotalAmount(0);
-		order.setTradeNo(withdrawals.getUser().getId()+"e"+System.currentTimeMillis());
+		order.setTradeNo(withdrawals.getUser().getId()+"d"+System.currentTimeMillis());
 		order.setType(Keys.ALIPAY_TYPE);
 		this.payOrderDao.save(order);
 		withdrawals.setState(WithdrawalsEnum.提现成功.ordinal());
+		withdrawals.setDealAdminId(userId);
 		withdrawals.setDealMoney(money);
 		withdrawals.setDealTime(new Date());
 		this.withdrawalsDao.save(withdrawals);
@@ -98,7 +99,6 @@ public class WithdrawalsBo {
 		order.setOutTradeNo(result.get("outBizNo"));
 		order.setTradeNo(result.get("orderId"));
 		this.payOrderDao.save(order);
-		return;
 	}
 
 	@Autowired
@@ -110,13 +110,13 @@ public class WithdrawalsBo {
 	@Autowired
 	MoneyTransactionBo moneyTransactionBo;
 
-	public void disagree(long id) throws Exception {
+	public void disagree(long id,long userId) throws Exception {
 		WithdrawalsDmo withdrawals = this.withdrawalsDao.findOne(id);
 		if (withdrawals == null) {
 			log.error("订单不存在");
 			throw new Exception("订单不存在");
 		}
-		if (withdrawals.getState() != WithdrawalsEnum.处理中.ordinal()) {
+		if (withdrawals.getState() ==WithdrawalsEnum.提现失败.ordinal()||withdrawals.getState()==WithdrawalsEnum.提现成功.ordinal()) {
 			log.error("该订单已处理");
 			throw new Exception("该订单已处理");
 		}
@@ -124,6 +124,7 @@ public class WithdrawalsBo {
 		withdrawals.setDealMoney(0);
 		withdrawals.setState(WithdrawalsEnum.提现失败.ordinal());
 		UserDmo user = withdrawals.getUser();
+		withdrawals.setDealAdminId(userId);
 		withdrawalsDao.save(withdrawals);
 		user.setLockAmount(user.getLockAmount() - withdrawals.getMoney());
 		user.setAmount(user.getAmount() + withdrawals.getMoney());

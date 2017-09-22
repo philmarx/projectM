@@ -23,7 +23,7 @@ public class WithdrawalsController {
 	public Callable<ResultModel> agree(long id,long userId,String token){
 		return ()->{
 			this.adminBo.loginByToken(userId, token);
-			this.withdrawalsBo.agree(id);
+			this.withdrawalsBo.agree(id,userId);
 			return new ResultModel();
 		};
 	}
@@ -32,7 +32,7 @@ public class WithdrawalsController {
 	public Callable<ResultModel> disagree(long id,long userId,String token){
 		return ()->{
 			this.adminBo.loginByToken(userId, token);
-			this.withdrawalsBo.disagree(id);
+			this.withdrawalsBo.disagree(id,userId);
 			return new ResultModel();
 		};
 	}

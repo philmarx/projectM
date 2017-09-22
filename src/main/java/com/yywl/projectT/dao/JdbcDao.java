@@ -15,6 +15,7 @@ import javax.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import com.yywl.projectT.bean.Formatter;
 import com.yywl.projectT.bean.Keys;
@@ -271,7 +272,8 @@ public class JdbcDao {
 			cBegin.set(Calendar.DAY_OF_YEAR, cBegin.get(Calendar.DAY_OF_YEAR) + 1);
 		}
 		findRecommenderSql.append(" SELECT count(DISTINCT user_id) as total FROM location ");
-		findRecommenderSql.append(" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=?  AND (init_time between ? and ?) ) ");
+		findRecommenderSql.append(
+				" WHERE user_id IN (SELECT id FROM user WHERE recommender_id=?  AND (init_time between ? and ?) ) ");
 		findRecommenderSql.append(
 				" AND user_id IN (SELECT DISTINCT user_id FROM (SELECT user_id,count(DISTINCT user_id) as repe FROM location GROUP BY udid) u WHERE repe=1) ");
 		findRecommenderSql.append(" AND ((longitude BETWEEN ? AND ?) AND (latitude BETWEEN ? AND ?)) ");
@@ -302,8 +304,8 @@ public class JdbcDao {
 						if (allCount == 0) {
 							continue;
 						}
-						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin, end,
-								longitude1, longitude2, latitude1, latitude2);
+						long recommendCount = jdbc.queryForObject(findRecommenderSql.toString(), Long.class, id, begin,
+								end, longitude1, longitude2, latitude1, latitude2);
 						Map<String, Object> recommand = new HashMap<>();
 						recommand.put("recommendCount", recommendCount);
 						recommand.put("date", Formatter.dateFormatter.format(begin));
@@ -337,7 +339,7 @@ public class JdbcDao {
 	 * 查看日期下推广的用户信息
 	 */
 	public List<Map<String, Object>> findRecommendUsers(long recommendId, Date date) throws Exception {
-		//查看推广员的信息
+		// 查看推广员的信息
 		String sql1 = "select id,user_id,longitude1,longitude2,latitude1,latitude2 from spread_user where user_id="
 				+ recommendId;
 		List<SpreadUserDmo> spreadList = jdbc.query(sql1, (ResultSet rs, int num) -> {
@@ -353,9 +355,9 @@ public class JdbcDao {
 		if (spreadList.isEmpty()) {
 			throw new Exception("推荐人不是推广员");
 		}
-		//获取推广员信息
+		// 获取推广员信息
 		SpreadUserDmo spreadUser = spreadList.get(0);
-		//查询推广的用户信息
+		// 查询推广的用户信息
 		StringBuilder sql2 = new StringBuilder();
 		sql2.append("select u.id,u.nickname,u.phone,!ISNULL(u.wx_uid) weixinExists, ");
 		sql2.append("!ISNULL(u.qq_uid) qqExists,u.real_name,u.birthday,u.account,count(l.id) loginTimes ");
@@ -370,9 +372,9 @@ public class JdbcDao {
 		end.set(Calendar.SECOND, 59);
 		end.set(Calendar.MILLISECOND, 999);
 		Date startDate = date, endDate = end.getTime();
-		//查询登录次数
+		// 查询登录次数
 		String sql3 = "select count(1) from location l where l.user_id=? and (l.longitude between ? and ?) and (l.latitude between ? and ?)";
-		//查询用户登录的设备
+		// 查询用户登录的设备
 		String sql4 = "select DISTINCT udid from location where udid is not null and udid !='' and user_id=?";
 		List<Map<String, Object>> list = jdbc.query(sql2.toString(),
 				new Object[] { Keys.Room.loginRoomId, recommendId, startDate, endDate }, (ResultSet rs, int num) -> {
@@ -395,7 +397,7 @@ public class JdbcDao {
 					if (udids.isEmpty()) {
 						m.put("hasOther", false);// 设备是否有其它账户
 					} else {
-						//查询该设备内是否有其它用户
+						// 查询该设备内是否有其它用户
 						StringBuilder sql5Builder = new StringBuilder("");
 						for (String udid : udids) {
 							sql5Builder.append(",'" + udid + "'");
@@ -408,6 +410,83 @@ public class JdbcDao {
 					}
 					return m;
 				});
+		return list;
+	}
+
+	public List<Map<String, Object>> findOctRooms(int page, int size) {
+		StringBuilder sql1 = new StringBuilder();
+		sql1.append("select r.id,r.name,r.begin_time,r.end_time,r.place,r.member_count,octr.sign_count,count(1) newCount,octr.is_reward");
+		sql1.append(" ,a.name rewardAdminName from oct_room octr left join room r on octr.room_id=r.id ");
+		sql1.append(" left join oct_room_user u on u.room_id=r.id and u.has_no_friend=1");
+		sql1.append(" left join admin a on a.id=octr.reward_admin_id ");
+		sql1.append(" group by r.id");
+		sql1.append(" LIMIT ?,?");
+		List<Map<String, Object>> list = jdbc.query(sql1.toString(), new Object[] { page * size, size },
+				(ResultSet rs, int num) -> {
+					Map<String, Object> map = new HashMap<>();
+					long roomId=rs.getLong("id");
+					map.put("id", roomId);
+					map.put("name", rs.getString("name"));
+					map.put("beginTime", rs.getTimestamp("begin_time"));
+					map.put("endTime", rs.getTimestamp("end_time"));
+					map.put("place", rs.getString("place"));
+					map.put("memberCount", rs.getInt("member_count"));
+					map.put("signCount", rs.getInt("sign_count"));
+					map.put("newCount", rs.getInt("newCount"));
+					map.put("reward", rs.getBoolean("is_reward"));
+					map.put("rewardAdminName", rs.getString("rewardAdminName"));
+					return map;
+				});
+		return list;
+	}
+
+	public int countOctRooms() {
+		StringBuilder sql=new StringBuilder();
+		sql.append("select count(1) from oct_room");
+		int count=jdbc.queryForObject(sql.toString(), Integer.class);
+		return count;
+	}
+
+	public List<Map<String, Object>> findOctRoomUsers(long roomId) {
+		StringBuilder sql1=new StringBuilder(),sql2=new StringBuilder(),sql3=new StringBuilder(),sql4=new StringBuilder();
+		sql1.append("select u.id,u.nickname,u.phone,u.qq_uid,u.wx_uid,u.real_name,u.id_card,u.birthday,ou.has_no_friend");
+		sql1.append(" from oct_room_user ou inner join user u on ou.user_id=u.id");
+		sql1.append(" where ou.room_id=?");
+		sql2.append("select count(1) from user u where u.id_card=? and u.id<>?");
+		sql3.append("select count(distinct l.user_id) from location l  ");
+		sql3.append(" where l.udid in ");
+		sql3.append(" (select distinct l.udid from location l where l.user_id=? and l.udid is not null and l.udid <> '') ");
+		sql4.append("select l.send_time from location l where l.user_id=?");
+		sql4.append(" and l.room_id=? order by l.send_time desc limit 0,1");
+		StringBuilder sql5=new StringBuilder();
+		sql5.append("select distinct udid from location where user_id=? and udid is not null and udid<>''");
+		List<Map<String,Object>> list=jdbc.query(sql1.toString(), new Object[] {roomId}, (ResultSet rs,int num)->{
+			Map<String,Object> m=new HashMap<>();
+			long userId=rs.getLong("id");
+			m.put("id", userId);
+			m.put("nickname", rs.getString("nickname"));
+			m.put("phone", rs.getString("phone"));
+			m.put("qq", !StringUtils.isEmpty(rs.getString("qq_uid")));
+			m.put("wx", !StringUtils.isEmpty(rs.getString("wx_uid")));
+			m.put("realName", rs.getString("real_name"));
+			String idCard=rs.getString("id_card");
+			m.put("idCard", idCard);
+			if (StringUtils.isEmpty(idCard)) {
+				m.put("isIdCardNoRepeat", true);
+			}else {
+				int count=jdbc.queryForObject(sql2.toString(),Integer.class,idCard,userId);
+				m.put("isIdCardNoRepeat", count==0);
+			}
+			int accountCount=jdbc.queryForObject(sql3.toString(), Integer.class,userId);
+			List<Date> lastLoginTime=jdbc.queryForList(sql4.toString(), Date.class,userId,Keys.Room.loginRoomId);
+			m.put("lastLoginTime", lastLoginTime.isEmpty()?null:lastLoginTime.get(0));
+			m.put("accountCount", accountCount);
+			m.put("birthday", rs.getDate("birthday"));
+			m.put("hasNoFriend", rs.getBoolean("has_no_friend"));
+			List<String> udids=jdbc.queryForList(sql5.toString(),String.class,userId);
+			m.put("udid", udids);
+			return m;
+		});
 		return list;
 	}
 

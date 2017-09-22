@@ -43,7 +43,7 @@ header a:HOVER {
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-lg-12">
-				<h3>解散房间</h3>
+				<h3>查看十月房间</h3>
 			</div>
 		</div>
 		<div class="row">
@@ -55,10 +55,13 @@ header a:HOVER {
 							<th>房间名</th>
 							<th>开始时间</th>
 							<th>结束时间</th>
-							<th>地点</th>
+							<th>位置</th>
 							<th>房间人数</th>
-							<th>已加入人数</th>
-							<th>解散</th>
+							<th>签到人数</th>
+							<th>完全新人人数</th>
+							<th>是否已奖励</th>
+							<th>奖励者</th>
+							<th>查看</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -89,7 +92,7 @@ header a:HOVER {
 				"page" : 0,
 				"size" : localStorage.getItem('pageMaxSize')
 			}
-			$.post('admin/findRooms', params, function(json) {
+			$.post('admin/findOctRooms', params, function(json) {
 				if (json.success) {
 					$('#pagination').pagination(5, json.data.totalPages,
 							localStorage.getItem('pageMaxSize'), handler);
@@ -100,22 +103,26 @@ header a:HOVER {
 			}, 'json')
 		}
 		function handler(pageNumber, pageSize) {
+			sessionStorage.setItem('pageNumber',pageNumber);
 			var params = {
 				"loginId" : sessionStorage.getItem('userId'),
 				"token" : sessionStorage.getItem('token'),
 				"page" : pageNumber - 1,
 				"size" : pageSize
 			}
-			$.post('admin/findRooms', params, function(json) {
+			$.post('admin/findOctRooms', params, function(json) {
 				if (json.success) {
 					var $tbody=$('tbody');
 					$tbody.html('');
 					$.each(json.data.content,function(i,o){
 						var $tr=$('<tr></tr>').append('<td>'+o.id+'</td>').append('<td>'+o.name+'</td>');
-						$tr.append('<td>'+o.beginTime+'</td>').append('<td>'+o.endTime+'</td>');
+						$tr.append('<td>'+dateTimeFormat(o.beginTime)+'</td>').append('<td>'+dateTimeFormat(o.endTime)+'</td>');
 						$tr.append('<td>'+o.place+'</td>').append('<td>'+(o.memberCount||'不限')+'</td>');
-						$tr.append('<td>'+o.joinMember+'</td>');
-						$tr.append('<a href="javascript:deleteRoom('+o.id+')">解散</a>')
+						$tr.append('<td>'+o.signCount+'</td>');
+						$tr.append('<td>'+o.newCount+'</td>')
+						$tr.append('<td>'+o.reward+'</td>')
+						$tr.append('<td>'+(o.rewardAdminName||'无')+'</td>')
+						$tr.append('<td><a style="margin-right:1em;" href="javascript:find('+o.id+')">查看</a><a href="javascript:reward('+o.id+')">奖励</a></td>')
 						$tbody.append($tr);
 					});
 				} else {
@@ -123,9 +130,30 @@ header a:HOVER {
 				}
 			}, 'json')
 		}
-		function deleteRoom(id){
-			window.deleteRoomId=id;
-			window.open('deleteRoom.html','_new','width=600px,height=400px,top=200px,left=600px');
+		function reward(id){
+			var result = window.confirm("是否确定");
+			if (!result) {
+				window.close();
+				return;
+			}
+			var params = {
+					"loginId" : sessionStorage.getItem('userId'),
+					"token" : sessionStorage.getItem('token'),
+					"roomId" : id
+				}
+			$.post('admin/octReward',params,function(json){
+				if (!json.success) {
+					alert(json.msg);
+					return;
+				}
+				handler(sessionStorage.getItem('pageNumber'),localStorage.getItem('pageMaxSize'));
+				alert('奖励成功');
+			},'json');
+		}
+		function find(id){
+			window.roomId=id;
+			sessionStorage.setItem('roomId',id);
+			window.open('octRoomsUsers.html','_new');
 		}
 		$(function() {
 			load();

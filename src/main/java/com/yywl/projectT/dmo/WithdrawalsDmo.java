@@ -30,6 +30,14 @@ public class WithdrawalsDmo implements Serializable {
 
 	private String alipayAccount;
 
+	private long dealAdminId;
+	
+	public long getDealAdminId() {
+		return dealAdminId;
+	}
+	public void setDealAdminId(long dealAdminId) {
+		this.dealAdminId = dealAdminId;
+	}
 	private int money;
 
 	private int state;
@@ -104,6 +112,7 @@ public class WithdrawalsDmo implements Serializable {
 		this.createTime = createTime;
 		this.dealTime = dealTime;
 		this.dealMoney = dealMoney;
+		this.dealAdminId=0;
 	}
 	
 	

@@ -31,6 +31,7 @@ import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bean.ValidatorBean;
 import com.yywl.projectT.bean.enums.ActivityStates;
 import com.yywl.projectT.bo.AdminBo;
+import com.yywl.projectT.bo.OctRoomBo;
 import com.yywl.projectT.bo.RoomBo;
 import com.yywl.projectT.dao.AdminDao;
 import com.yywl.projectT.dao.ApplicationDao;
@@ -38,6 +39,7 @@ import com.yywl.projectT.dao.ComplaintDao;
 import com.yywl.projectT.dao.JdbcDao;
 import com.yywl.projectT.dao.LocationDao;
 import com.yywl.projectT.dao.NotLateReasonDao;
+import com.yywl.projectT.dao.OctRoomDao;
 import com.yywl.projectT.dao.PropTypeDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;
@@ -51,6 +53,7 @@ import com.yywl.projectT.dmo.ApplicationDmo;
 import com.yywl.projectT.dmo.ComplaintDmo;
 import com.yywl.projectT.dmo.LocationDmo;
 import com.yywl.projectT.dmo.NotLateReasonDmo;
+import com.yywl.projectT.dmo.OctRoomDmo;
 import com.yywl.projectT.dmo.PropTypeDmo;
 import com.yywl.projectT.dmo.RoomDmo;
 import com.yywl.projectT.dmo.SpreadUserDmo;
@@ -94,39 +97,87 @@ public class AdminController {
 	@Autowired
 	NotLateReasonDao noteLateReasonDao;
 
+	@Autowired
+	OctRoomDao octRoomDao;
+
+	@Autowired
+	OctRoomBo octRoomBo;
+
+	@PostMapping("octReward")
+	public Callable<ResultModel> octReward(long loginId, String token, long roomId) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			OctRoomDmo octRoomDmo = this.octRoomDao.findByRoomId(roomId);
+			if (octRoomDmo == null) {
+				throw new Exception("房间不存在");
+			}
+			if (octRoomDmo.isReward()) {
+				throw new Exception("已奖过");
+			}
+			this.octRoomBo.reward(octRoomDmo, loginId);
+			return new ResultModel();
+		};
+	}
+
+	@PostMapping("findOctRoomUsers")
+	public Callable<ResultModel> findOctRoomUsers(long loginId, String token, long roomId) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			List<Map<String, Object>> list = jdbcDao.findOctRoomUsers(roomId);
+			return new ResultModel(true, null, list);
+		};
+	}
+
+	@PostMapping("findOctRooms")
+	public Callable<ResultModel> findOctRooms(long loginId, String token, int page, int size) {
+		return () -> {
+			this.adminBo.loginByToken(loginId, token);
+			List<Map<String, Object>> list = this.jdbcDao.findOctRooms(ValidatorBean.page(page),
+					ValidatorBean.size(size));
+			Map<String, Object> data = new HashMap<>();
+			data.put("content", list);
+			int count = this.jdbcDao.countOctRooms();
+			int totalPages = count % size == 0 ? count / size : (count / size) + 1;
+			data.put("totalPages", totalPages);
+			return new ResultModel(true, null, data);
+		};
+	}
+
 	@PostMapping("spreadUser/add")
 	public Callable<ResultModel> addSpreadUser(long loginId, String token, long userId, double longitude1,
-			double longitude2,double latitude1,double latitude2) {
+			double longitude2, double latitude1, double latitude2) {
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			this.adminBo.addSpreadUser(userId,longitude1,longitude2,latitude1,latitude2);
+			this.adminBo.addSpreadUser(userId, longitude1, longitude2, latitude1, latitude2);
 			return new ResultModel();
 		};
 	}
+
 	@PostMapping("spreadUser/update")
-	public Callable<ResultModel> updateSpreadUser(long loginId, String token, long id,long userId, double longitude1,
-			double longitude2,double latitude1,double latitude2) {
+	public Callable<ResultModel> updateSpreadUser(long loginId, String token, long id, long userId, double longitude1,
+			double longitude2, double latitude1, double latitude2) {
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			this.adminBo.updateSpreadUser(id,userId,longitude1,longitude2,latitude1,latitude2);
+			this.adminBo.updateSpreadUser(id, userId, longitude1, longitude2, latitude1, latitude2);
 			return new ResultModel();
 		};
 	}
-	
+
 	/**
 	 * 管理员设置所有人状态为准备
 	 */
 	@PostMapping("room/readyMember")
-	public Callable<ResultModel> readyMember(long userId,String token,long roomId){
-		return ()->{
+	public Callable<ResultModel> readyMember(long userId, String token, long roomId) {
+		return () -> {
 			this.adminBo.loginByToken(userId, token);
-			int fail=this.roomBo.readyMember(roomId);
-			if (fail>0) {
-				return new ResultModel(false,fail+"人观影券不足",null);
+			int fail = this.roomBo.readyMember(roomId);
+			if (fail > 0) {
+				return new ResultModel(false, fail + "人观影券不足", null);
 			}
 			return new ResultModel();
 		};
 	}
+
 	@PostMapping("spreadUser/remove")
 	public Callable<ResultModel> removeSpreadUser(long loginId, String token, long id) {
 		return () -> {
@@ -390,7 +441,7 @@ public class AdminController {
 
 	@PostMapping("changeVersionV2")
 	public Callable<ResultModel> changeVersionV2(long userId, String token, int id, String version, String downUrl,
-			String message, String force, String current,boolean remind) {
+			String message, String force, String current, boolean remind) {
 		return () -> {
 			this.adminBo.loginByToken(userId, token);
 			if (StringUtils.isEmpty(version)) {

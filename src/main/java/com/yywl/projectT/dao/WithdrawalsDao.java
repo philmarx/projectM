@@ -10,4 +10,6 @@ public interface WithdrawalsDao extends JpaRepository<WithdrawalsDmo, Long> {
 
 	Page<WithdrawalsDmo> findByState(Integer state, Pageable pageable);
 
+	Page<WithdrawalsDmo> findByStateNotIn(Pageable pageable, Integer[] integers);
+
 }

@@ -43,7 +43,7 @@ header a:HOVER {
 	<div class="container-fluid">
 		<div class="row">
 			<div class="col-lg-12">
-				<h3>解散房间</h3>
+				<h3>查看十月房间</h3>
 			</div>
 		</div>
 		<div class="row">
@@ -51,25 +51,25 @@ header a:HOVER {
 				<table class="table table-striped table-hover">
 					<thead>
 						<tr>
-							<th>房间ID</th>
-							<th>房间名</th>
-							<th>开始时间</th>
-							<th>结束时间</th>
-							<th>地点</th>
-							<th>房间人数</th>
-							<th>已加入人数</th>
-							<th>解散</th>
+							<th>ID</th>
+							<th>昵称</th>
+							<th>手机</th>
+							<th>QQ</th>
+							<th>微信</th>
+							<th>姓名</th>
+							<th>身份证</th>
+							<th>ID卡未重复</th>
+							<th>账号数量</th>
+							<th>生日</th>
+							<th>是否是新人</th>
+							<th>最后一次上线时间</th>
+							<th>UDID</th>
 						</tr>
 					</thead>
 					<tbody>
 
 					</tbody>
 				</table>
-			</div>
-		</div>
-		<div class="row">
-			<div class="col-lg-12">
-				<ul id="pagination"></ul>
 			</div>
 		</div>
 	</div>
@@ -84,49 +84,45 @@ header a:HOVER {
 				return;
 			}
 			var params = {
-				"loginId" : userId,
-				"token" : sessionStorage.getItem('token'),
-				"page" : 0,
-				"size" : localStorage.getItem('pageMaxSize')
-			}
-			$.post('admin/findRooms', params, function(json) {
-				if (json.success) {
-					$('#pagination').pagination(5, json.data.totalPages,
-							localStorage.getItem('pageMaxSize'), handler);
-					handler(1,localStorage.getItem('pageMaxSize'));
-				} else {
-					alert(json.msg);
+					"loginId" : sessionStorage.getItem('userId'),
+					"token" : sessionStorage.getItem('token'),
+					"roomId" : sessionStorage.getItem('roomId')
 				}
-			}, 'json')
+				$.post('admin/findOctRoomUsers', params, function(json) {
+					if (json.success) {
+						var $tbody=$('tbody');
+						$tbody.html('');
+						$.each(json.data,function(i,o){
+							var $tr=$('<tr></tr>');
+							$tr.append('<td>'+o.id+'</td>');
+							$tr.append('<td>'+o.nickname+'</td>');
+							$tr.append('<td>'+(o.phone||'未绑定')+'</td>');
+							$tr.append('<td>'+o.qq+'</td>');
+							$tr.append('<td>'+o.wx+'</td>');
+							$tr.append('<td>'+(o.realName||'未绑定')+'</td>');
+							$tr.append('<td>'+(o.idCard||'未绑定')+'</td>');
+							$tr.append('<td>'+o.isIdCardNoRepeat+'</td>');
+							$tr.append('<td>'+o.accountCount+'</td>');
+							$tr.append('<td>'+o.birthday+'</td>');
+							$tr.append('<td>'+o.hasNoFriend+'</td>');
+							$tr.append('<td>'+(o.lastLoginTime?dateTimeFormat(o.lastLoginTime):'无')+'</td>');
+							var $td=$('<td></td>');
+							var str='';
+							$.each(o.udid,function(i,u){
+								str+=u+',<br/>'
+							});
+							$td.append(str);
+							$tr.append($td);
+							$tbody.append($tr);
+						});
+						$('td:contains(未绑定)').css('color','red');
+					} else {
+						alert(json.msg);
+					}
+				}, 'json')
 		}
-		function handler(pageNumber, pageSize) {
-			var params = {
-				"loginId" : sessionStorage.getItem('userId'),
-				"token" : sessionStorage.getItem('token'),
-				"page" : pageNumber - 1,
-				"size" : pageSize
-			}
-			$.post('admin/findRooms', params, function(json) {
-				if (json.success) {
-					var $tbody=$('tbody');
-					$tbody.html('');
-					$.each(json.data.content,function(i,o){
-						var $tr=$('<tr></tr>').append('<td>'+o.id+'</td>').append('<td>'+o.name+'</td>');
-						$tr.append('<td>'+o.beginTime+'</td>').append('<td>'+o.endTime+'</td>');
-						$tr.append('<td>'+o.place+'</td>').append('<td>'+(o.memberCount||'不限')+'</td>');
-						$tr.append('<td>'+o.joinMember+'</td>');
-						$tr.append('<a href="javascript:deleteRoom('+o.id+')">解散</a>')
-						$tbody.append($tr);
-					});
-				} else {
-					alert(json.msg);
-				}
-			}, 'json')
-		}
-		function deleteRoom(id){
-			window.deleteRoomId=id;
-			window.open('deleteRoom.html','_new','width=600px,height=400px,top=200px,left=600px');
-		}
+	
+
 		$(function() {
 			load();
 		});

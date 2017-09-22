@@ -36,6 +36,7 @@ header a:HOVER {
 		<a href="rooms.html">解散房间</a><a href="props.html">查看道具</a>
 		<a href="spreadUsers.html">查看推广员</a>
 		<a href="roomsToReady.html">准备房间</a>
+		<a href="octRooms.html">查看十月房间</a>
 		<a href="manage.html" id="isSuper">管理管理员</a>
 		<a href="login.html" style="float: right; margin-right: 2em;">登录</a>
 	</header>
@@ -131,11 +132,13 @@ header a:HOVER {
 						}else if(o.state==2){
 							$tr.append('<td>拒绝</td>');
 							$tr.append('<td>已处理</td>');
-						}else {
-							$tr.append('<td>状态码错误</td>');
-							$tr.append('<td>已处理</td>');
+						}else if(o.state==3){
+							$tr.append('<td>异常待处理</td>');
+							var $td=$('<td></td>');
+							$td.append('<a href="javascript:agree('+o.id+')">同意</a>');
+							$td.append('<a href="javascript:disagree('+o.id+')"  style="margin-right:1em;margin-left:1em;">拒绝</a>');
+							$tr.append($td);
 						}
-						
 						$tbody.append($tr);
 					});
 				} else {
