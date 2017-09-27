@@ -415,12 +415,13 @@ public class JdbcDao {
 
 	public List<Map<String, Object>> findOctRooms(int page, int size) {
 		StringBuilder sql1 = new StringBuilder();
-		sql1.append("select r.id,r.name,r.begin_time,r.end_time,r.place,r.member_count,octr.sign_count,count(1) newCount,octr.is_reward");
-		sql1.append(" ,a.name rewardAdminName from oct_room octr left join room r on octr.room_id=r.id ");
+		sql1.append("select r.id,r.name,r.begin_time,r.end_time,r.place,r.member_count,octr.sign_count,count(u.id) newCount,octr.state");
+		sql1.append(" ,a.name rewardAdminName,octr.bounty from oct_room octr left join room r on octr.room_id=r.id ");
 		sql1.append(" left join oct_room_user u on u.room_id=r.id and u.has_no_friend=1");
 		sql1.append(" left join admin a on a.id=octr.reward_admin_id ");
 		sql1.append(" group by r.id");
 		sql1.append(" LIMIT ?,?");
+		String sql2="select count(1) from room_member rm where rm.room=? ";
 		List<Map<String, Object>> list = jdbc.query(sql1.toString(), new Object[] { page * size, size },
 				(ResultSet rs, int num) -> {
 					Map<String, Object> map = new HashMap<>();
@@ -430,11 +431,16 @@ public class JdbcDao {
 					map.put("beginTime", rs.getTimestamp("begin_time"));
 					map.put("endTime", rs.getTimestamp("end_time"));
 					map.put("place", rs.getString("place"));
-					map.put("memberCount", rs.getInt("member_count"));
+					int memberCount=jdbc.queryForObject(sql2, new Object[] {roomId}, Integer.class);
+					map.put("memberCount",memberCount);
 					map.put("signCount", rs.getInt("sign_count"));
 					map.put("newCount", rs.getInt("newCount"));
-					map.put("reward", rs.getBoolean("is_reward"));
+					map.put("state", rs.getInt("state"));
 					map.put("rewardAdminName", rs.getString("rewardAdminName"));
+					double bounty=rs.getInt("bounty");
+					bounty=bounty/100.0;
+					String bountyStr=String.format("%.2f",bounty);
+					map.put("bounty", bountyStr);
 					return map;
 				});
 		return list;
@@ -450,6 +456,7 @@ public class JdbcDao {
 	public List<Map<String, Object>> findOctRoomUsers(long roomId) {
 		StringBuilder sql1=new StringBuilder(),sql2=new StringBuilder(),sql3=new StringBuilder(),sql4=new StringBuilder();
 		sql1.append("select u.id,u.nickname,u.phone,u.qq_uid,u.wx_uid,u.real_name,u.id_card,u.birthday,ou.has_no_friend");
+		sql1.append(" ,ou.bounty,ou.is_foul,ou.state ");
 		sql1.append(" from oct_room_user ou inner join user u on ou.user_id=u.id");
 		sql1.append(" where ou.room_id=?");
 		sql2.append("select count(1) from user u where u.id_card=? and u.id<>?");
@@ -457,12 +464,19 @@ public class JdbcDao {
 		sql3.append(" where l.udid in ");
 		sql3.append(" (select distinct l.udid from location l where l.user_id=? and l.udid is not null and l.udid <> '') ");
 		sql4.append("select l.send_time from location l where l.user_id=?");
-		sql4.append(" and l.room_id=? order by l.send_time desc limit 0,1");
+		sql4.append(" order by l.send_time desc limit 0,1");
 		StringBuilder sql5=new StringBuilder();
 		sql5.append("select distinct udid from location where user_id=? and udid is not null and udid<>''");
+		String sql6="SELECT count(1) FROM oct_room_user where user_id=? ";
 		List<Map<String,Object>> list=jdbc.query(sql1.toString(), new Object[] {roomId}, (ResultSet rs,int num)->{
 			Map<String,Object> m=new HashMap<>();
 			long userId=rs.getLong("id");
+			double bounty=rs.getInt("bounty");
+			bounty=bounty/100.0;
+			String bountyStr=String.format("%.2f",bounty);
+			m.put("bounty", bountyStr);
+			m.put("foul", rs.getBoolean("is_foul"));
+			m.put("state", rs.getInt("state"));
 			m.put("id", userId);
 			m.put("nickname", rs.getString("nickname"));
 			m.put("phone", rs.getString("phone"));
@@ -478,13 +492,15 @@ public class JdbcDao {
 				m.put("isIdCardNoRepeat", count==0);
 			}
 			int accountCount=jdbc.queryForObject(sql3.toString(), Integer.class,userId);
-			List<Date> lastLoginTime=jdbc.queryForList(sql4.toString(), Date.class,userId,Keys.Room.loginRoomId);
+			List<Date> lastLoginTime=jdbc.queryForList(sql4.toString(), Date.class,userId);
 			m.put("lastLoginTime", lastLoginTime.isEmpty()?null:lastLoginTime.get(0));
 			m.put("accountCount", accountCount);
 			m.put("birthday", rs.getDate("birthday"));
 			m.put("hasNoFriend", rs.getBoolean("has_no_friend"));
 			List<String> udids=jdbc.queryForList(sql5.toString(),String.class,userId);
 			m.put("udid", udids);
+			int roomTimes=jdbc.queryForObject(sql6, Integer.class,userId);
+			m.put("roomTimes", roomTimes);
 			return m;
 		});
 		return list;

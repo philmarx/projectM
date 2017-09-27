@@ -29,7 +29,9 @@ import com.yywl.projectT.bean.DistanceConverter;
 import com.yywl.projectT.bean.MD5Util;
 import com.yywl.projectT.bean.ResultModel;
 import com.yywl.projectT.bean.ValidatorBean;
+import com.yywl.projectT.bean.component.RongCloudBean;
 import com.yywl.projectT.bean.enums.ActivityStates;
+import com.yywl.projectT.bean.enums.OctRoomEnum;
 import com.yywl.projectT.bo.AdminBo;
 import com.yywl.projectT.bo.OctRoomBo;
 import com.yywl.projectT.bo.RoomBo;
@@ -40,6 +42,7 @@ import com.yywl.projectT.dao.JdbcDao;
 import com.yywl.projectT.dao.LocationDao;
 import com.yywl.projectT.dao.NotLateReasonDao;
 import com.yywl.projectT.dao.OctRoomDao;
+import com.yywl.projectT.dao.OctRoomUserDao;
 import com.yywl.projectT.dao.PropTypeDao;
 import com.yywl.projectT.dao.RoomDao;
 import com.yywl.projectT.dao.RoomMemberDao;
@@ -103,16 +106,47 @@ public class AdminController {
 	@Autowired
 	OctRoomBo octRoomBo;
 
+	@Autowired
+	OctRoomUserDao octRoomUserDao;
+	
+	@Autowired
+	RongCloudBean rongCloud;
+	
+	@PostMapping("octRefuse")
+	public Callable<ResultModel> octRefuse(long loginId, String token,long roomId,String reason){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			OctRoomDmo dmo=this.octRoomDao.findByRoomId(roomId);
+			if (dmo == null) {
+				throw new Exception("用户不在房间内");
+			}
+			if (dmo.getState()!=OctRoomEnum.审核中.ordinal()) {
+				throw new Exception("请勿重复操作");
+			}
+			this.octRoomBo.refuce(dmo,loginId,reason);
+			return new ResultModel();
+		};
+	}
+	
+	@PostMapping("setFoul")
+	public Callable<ResultModel> setFoul(long loginId, String token,long userId,long roomId,boolean foul){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			this.octRoomBo.setFoul(userId,foul);
+			return new ResultModel();
+		};
+	}
+	
 	@PostMapping("octReward")
 	public Callable<ResultModel> octReward(long loginId, String token, long roomId) {
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
 			OctRoomDmo octRoomDmo = this.octRoomDao.findByRoomId(roomId);
 			if (octRoomDmo == null) {
-				throw new Exception("房间不存在");
+				throw new Exception("用户不在房间内");
 			}
-			if (octRoomDmo.isReward()) {
-				throw new Exception("已奖过");
+			if (octRoomDmo.getState()!=OctRoomEnum.审核中.ordinal()) {
+				throw new Exception("请勿重复操作");
 			}
 			this.octRoomBo.reward(octRoomDmo, loginId);
 			return new ResultModel();

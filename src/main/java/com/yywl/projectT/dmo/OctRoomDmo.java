@@ -1,12 +1,15 @@
 package com.yywl.projectT.dmo;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 @Entity
 @Table(name="oct_room")
@@ -19,12 +22,56 @@ public class OctRoomDmo implements Serializable{
 	
 	private long roomId;
 	
-	private boolean isReward;
-	
 	private int signCount;
 
 	private Long rewardAdminId;
 	
+	/**
+	 * 0为审核中，1为通过，2为拒绝
+	 */
+	private int state;
+
+	public int getState() {
+		return state;
+	}
+
+	public void setState(int state) {
+		this.state = state;
+	}
+
+	private String reason;
+	
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
+	/**
+	 * 奖金
+	 */
+	private int bounty;
+	
+	public int getBounty() {
+		return bounty;
+	}
+
+	public void setBounty(int bounty) {
+		this.bounty = bounty;
+	}
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date rewardTime;
+	
+	public Date getRewardTime() {
+		return rewardTime;
+	}
+
+	public void setRewardTime(Date rewardTime) {
+		this.rewardTime = rewardTime;
+	}
 	public Long getRewardAdminId() {
 		return rewardAdminId;
 	}
@@ -37,11 +84,10 @@ public class OctRoomDmo implements Serializable{
 		super();
 	}
 
-	public OctRoomDmo(Long id, long roomId, boolean isReward, int signCount) {
+	public OctRoomDmo(Long id, long roomId, int signCount) {
 		super();
 		this.id = id;
 		this.roomId = roomId;
-		this.isReward = isReward;
 		this.signCount = signCount;
 	}
 
@@ -57,16 +103,8 @@ public class OctRoomDmo implements Serializable{
 		return signCount;
 	}
 
-	public boolean isReward() {
-		return isReward;
-	}
-
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public void setReward(boolean isReward) {
-		this.isReward = isReward;
 	}
 
 	public void setRoomId(long roomId) {

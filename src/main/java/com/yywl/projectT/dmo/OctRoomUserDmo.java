@@ -22,7 +22,42 @@ public class OctRoomUserDmo implements Serializable{
 	private long userId;
 	
 	private boolean hasNoFriend;
+	/**
+	 * 奖金
+	 */
+	private int bounty;
+	/**
+	 * 是否违规
+	 */
+	private boolean isFoul;
+	/**
+	 * 0 审核中，1 审核通过未领取 ， 2 审核通过已领取 ， 3 审核不通过
+	 */
+	private int state;
+	
+	public int getState() {
+		return state;
+	}
 
+	public void setState(int state) {
+		this.state = state;
+	}
+
+	public boolean isFoul() {
+		return isFoul;
+	}
+
+	public void setFoul(boolean isFoul) {
+		this.isFoul = isFoul;
+	}
+
+	public int getBounty() {
+		return bounty;
+	}
+
+	public void setBounty(int bounty) {
+		this.bounty = bounty;
+	}
 	public OctRoomUserDmo() {
 		super();
 	}

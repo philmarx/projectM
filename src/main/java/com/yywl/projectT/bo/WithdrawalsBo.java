@@ -54,7 +54,7 @@ public class WithdrawalsBo {
 			log.error(user.getId() + ":请先实名认证");
 			throw new Exception("请先实名认证");
 		}
-		if (user.getAmount().intValue() < money) {
+		if (user.getLockAmount().intValue() < money) {
 			log.error(user.getId() + ":余额不足");
 			throw new Exception("余额不足");
 		}

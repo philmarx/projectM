@@ -6,4 +6,6 @@ import com.yywl.projectT.dmo.OctRoomUserDmo;
 
 public interface OctRoomUserDao extends JpaRepository<OctRoomUserDmo, Long> {
 
+	OctRoomUserDmo findByRoomIdAndUserId(long roomId, long userId);
+
 }
