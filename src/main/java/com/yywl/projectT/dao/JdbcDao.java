@@ -413,19 +413,25 @@ public class JdbcDao {
 		return list;
 	}
 
-	public List<Map<String, Object>> findOctRooms(int page, int size) {
+	public List<Map<String, Object>> findOctRooms(int state,int page, int size) {
 		StringBuilder sql1 = new StringBuilder();
-		sql1.append("select r.id,r.name,r.begin_time,r.end_time,r.place,r.member_count,octr.sign_count,count(u.id) newCount,octr.state");
+		sql1.append("select g.name game_name,octr.reason,r.id,r.name,r.begin_time,r.end_time,r.place,r.member_count,octr.sign_count,count(u.id) newCount,octr.state");
 		sql1.append(" ,a.name rewardAdminName,octr.bounty from oct_room octr left join room r on octr.room_id=r.id ");
 		sql1.append(" left join oct_room_user u on u.room_id=r.id and u.has_no_friend=1");
 		sql1.append(" left join admin a on a.id=octr.reward_admin_id ");
-		sql1.append(" group by r.id");
+		sql1.append(" left join game g on g.id=r.game ");
+		if (state!=-1) {
+			sql1.append(" where octr.state="+state+" ");
+		}
+		sql1.append(" group by r.id order by r.end_time desc ");
 		sql1.append(" LIMIT ?,?");
 		String sql2="select count(1) from room_member rm where rm.room=? ";
 		List<Map<String, Object>> list = jdbc.query(sql1.toString(), new Object[] { page * size, size },
 				(ResultSet rs, int num) -> {
 					Map<String, Object> map = new HashMap<>();
+					map.put("gameName", rs.getString("game_name"));
 					long roomId=rs.getLong("id");
+					map.put("reason", rs.getString("reason"));
 					map.put("id", roomId);
 					map.put("name", rs.getString("name"));
 					map.put("beginTime", rs.getTimestamp("begin_time"));
@@ -446,16 +452,19 @@ public class JdbcDao {
 		return list;
 	}
 
-	public int countOctRooms() {
+	public int countOctRooms(int state) {
 		StringBuilder sql=new StringBuilder();
-		sql.append("select count(1) from oct_room");
+		sql.append("select count(1) from oct_room ");
+		if (state!=-1) {
+			sql.append(" where state="+state);
+		}
 		int count=jdbc.queryForObject(sql.toString(), Integer.class);
 		return count;
 	}
 
 	public List<Map<String, Object>> findOctRoomUsers(long roomId) {
 		StringBuilder sql1=new StringBuilder(),sql2=new StringBuilder(),sql3=new StringBuilder(),sql4=new StringBuilder();
-		sql1.append("select u.id,u.nickname,u.phone,u.qq_uid,u.wx_uid,u.real_name,u.id_card,u.birthday,ou.has_no_friend");
+		sql1.append("select ou.id,u.id userId,u.nickname,u.phone,u.qq_uid,u.wx_uid,u.real_name,u.id_card,u.birthday,ou.has_no_friend");
 		sql1.append(" ,ou.bounty,ou.is_foul,ou.state ");
 		sql1.append(" from oct_room_user ou inner join user u on ou.user_id=u.id");
 		sql1.append(" where ou.room_id=?");
@@ -470,14 +479,15 @@ public class JdbcDao {
 		String sql6="SELECT count(1) FROM oct_room_user where user_id=? ";
 		List<Map<String,Object>> list=jdbc.query(sql1.toString(), new Object[] {roomId}, (ResultSet rs,int num)->{
 			Map<String,Object> m=new HashMap<>();
-			long userId=rs.getLong("id");
+			m.put("id", rs.getLong("id"));
+			long userId=rs.getLong("userId");
 			double bounty=rs.getInt("bounty");
 			bounty=bounty/100.0;
 			String bountyStr=String.format("%.2f",bounty);
 			m.put("bounty", bountyStr);
 			m.put("foul", rs.getBoolean("is_foul"));
 			m.put("state", rs.getInt("state"));
-			m.put("id", userId);
+			m.put("userId", userId);
 			m.put("nickname", rs.getString("nickname"));
 			m.put("phone", rs.getString("phone"));
 			m.put("qq", !StringUtils.isEmpty(rs.getString("qq_uid")));
@@ -503,6 +513,14 @@ public class JdbcDao {
 			m.put("roomTimes", roomTimes);
 			return m;
 		});
+		return list;
+	}
+
+	public List<Long> findOctRoomUserIdsByRoomIdAndState(long roomId, int state) {
+		StringBuilder sql=new StringBuilder();
+		sql.append("select u.user_id from oct_room_user u inner join room r on r.id=u.room_id");
+		sql.append(" where r.id=? and u.state=? ");
+		List<Long> list=jdbc.queryForList(sql.toString(), Long.class, roomId,state);
 		return list;
 	}
 

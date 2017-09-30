@@ -107,7 +107,6 @@ header a:HOVER {
 			}
 			$.post('admin/findComplaints', params, function(json) {
 				if (json.success) {
-					console.dir(json.data);
 					var $tbody=$('tbody');
 					$tbody.html('');
 					$.each(json.data.content,function(i,o){

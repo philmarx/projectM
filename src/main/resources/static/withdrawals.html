@@ -58,6 +58,7 @@ header a:HOVER {
 							<th>申请日期</th>
 							<th>处理日期</th>
 							<th>状态</th>
+							<th>处理人</th>
 							<th>处理</th>
 						</tr>
 					</thead>
@@ -119,21 +120,25 @@ header a:HOVER {
 						$tr.append('<td>'+o.money/100.0+'元</td>');
 						$tr.append('<td>'+o.createTime+'</td>');
 						o.dealTime=o.dealTime==null?'':o.dealTime;
-						$tr.append('<td>'+o.dealTime+'</td>');
+						$tr.append('<td>'+(o.dealTime?dateTimeFormat(o.dealTime):'')+'</td>');
 						if(o.state==0){
 							$tr.append('<td>待处理</td>');
+							$tr.append('<td>无</td>');
 							var $td=$('<td></td>');
 							$td.append('<a href="javascript:agree('+o.id+')">同意</a>');
 							$td.append('<a href="javascript:disagree('+o.id+')"  style="margin-right:1em;margin-left:1em;">拒绝</a>');
 							$tr.append($td);
 						}else if(o.state==1){
 							$tr.append('<td>同意</td>');
+							$tr.append('<td>'+(o.dealAdmin?o.dealAdmin.name:'无')+'</td>');
 							$tr.append('<td>已处理</td>');
 						}else if(o.state==2){
 							$tr.append('<td>拒绝</td>');
+							$tr.append('<td>'+(o.dealAdmin?o.dealAdmin.name:'无')+'</td>');
 							$tr.append('<td>已处理</td>');
 						}else if(o.state==3){
 							$tr.append('<td>异常待处理</td>');
+							$tr.append('<td>无</td>');
 							var $td=$('<td></td>');
 							$td.append('<a href="javascript:agree('+o.id+')">同意</a>');
 							$td.append('<a href="javascript:disagree('+o.id+')"  style="margin-right:1em;margin-left:1em;">拒绝</a>');

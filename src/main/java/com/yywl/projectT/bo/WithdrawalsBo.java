@@ -62,11 +62,11 @@ public class WithdrawalsBo {
 			log.error(user.getId() + ":最少提现0.1元");
 			throw new Exception("最少提现0.1元");
 		}
-		long count = this.roomMemberDao.countByMember_IdAndRoom_StateInAndIsSigned(user.getId(), new Integer[] {
-				ActivityStates.进行中.ordinal(), ActivityStates.待评价.ordinal(), ActivityStates.已结束.ordinal() }, true);
+		long count = this.roomMemberDao.countByMember_IdAndRoom_StateIn(user.getId(), new Integer[] {
+				 ActivityStates.待评价.ordinal(), ActivityStates.已结束.ordinal() });
 		if (count < 1) {
-			log.error(user.getId() + ":至少参加过一次成功签到的活动");
-			throw new Exception("至少参加过一次成功签到的活动");
+			log.error(user.getId() + ":至少参加过一次活动");
+			throw new Exception("至少参加过一次活动");
 		}
 		boolean isMoneyError = this.moneyTransactionBo.isMoneyError(user);
 		if (isMoneyError) {

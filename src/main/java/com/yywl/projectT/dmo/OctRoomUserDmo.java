@@ -22,6 +22,20 @@ public class OctRoomUserDmo implements Serializable{
 	private long userId;
 	
 	private boolean hasNoFriend;
+	
+	/**
+	 * 拒绝理由
+	 */
+	private String reason;
+	
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
 	/**
 	 * 奖金
 	 */

@@ -63,4 +63,6 @@ public interface RoomMemberDao extends JpaRepository<RoomMemberDmo, Long> {
 
 	long countByMember_IdAndRoom_StateInAndIsSigned(Long id, Integer[] states, boolean isSigned);
 
+	long countByMember_IdAndRoom_StateIn(Long id, Integer[] integers);
+
 }

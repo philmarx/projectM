@@ -113,7 +113,7 @@ public class AdminController {
 	RongCloudBean rongCloud;
 	
 	@PostMapping("octRefuse")
-	public Callable<ResultModel> octRefuse(long loginId, String token,long roomId,String reason){
+	public Callable<ResultModel> octRefuseList(long loginId, String token,long roomId,String reason){
 		return ()->{
 			this.adminBo.loginByToken(loginId, token);
 			OctRoomDmo dmo=this.octRoomDao.findByRoomId(roomId);
@@ -123,7 +123,7 @@ public class AdminController {
 			if (dmo.getState()!=OctRoomEnum.审核中.ordinal()) {
 				throw new Exception("请勿重复操作");
 			}
-			this.octRoomBo.refuce(dmo,loginId,reason);
+			this.octRoomBo.refuceList(dmo,loginId,reason);
 			return new ResultModel();
 		};
 	}
@@ -137,8 +137,17 @@ public class AdminController {
 		};
 	}
 	
+	@PostMapping("oct/disableBounty")
+	public Callable<ResultModel> octResuseOne(long loginId, String token,long id,String reason){
+		return ()->{
+			this.adminBo.loginByToken(loginId, token);
+			this.octRoomBo.refuseOne(id,reason);
+			return new ResultModel();
+		};
+	}
+	
 	@PostMapping("octReward")
-	public Callable<ResultModel> octReward(long loginId, String token, long roomId) {
+	public Callable<ResultModel> octRewardList(long loginId, String token, long roomId) {
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
 			OctRoomDmo octRoomDmo = this.octRoomDao.findByRoomId(roomId);
@@ -148,7 +157,7 @@ public class AdminController {
 			if (octRoomDmo.getState()!=OctRoomEnum.审核中.ordinal()) {
 				throw new Exception("请勿重复操作");
 			}
-			this.octRoomBo.reward(octRoomDmo, loginId);
+			this.octRoomBo.rewardList(octRoomDmo, loginId);
 			return new ResultModel();
 		};
 	}
@@ -163,14 +172,14 @@ public class AdminController {
 	}
 
 	@PostMapping("findOctRooms")
-	public Callable<ResultModel> findOctRooms(long loginId, String token, int page, int size) {
+	public Callable<ResultModel> findOctRooms(long loginId, String token, int page, int size,int state) {
 		return () -> {
 			this.adminBo.loginByToken(loginId, token);
-			List<Map<String, Object>> list = this.jdbcDao.findOctRooms(ValidatorBean.page(page),
+			List<Map<String, Object>> list = this.jdbcDao.findOctRooms(state,ValidatorBean.page(page),
 					ValidatorBean.size(size));
 			Map<String, Object> data = new HashMap<>();
 			data.put("content", list);
-			int count = this.jdbcDao.countOctRooms();
+			int count = this.jdbcDao.countOctRooms(state);
 			int totalPages = count % size == 0 ? count / size : (count / size) + 1;
 			data.put("totalPages", totalPages);
 			return new ResultModel(true, null, data);
@@ -442,7 +451,25 @@ public class AdminController {
 			} else {
 				withdrawalsDmoPage = this.withdrawalsDao.findByState(state, pageable);
 			}
-			return new ResultModel(true, "", withdrawalsDmoPage);
+			Map<String,Object> data=new HashMap<>();
+			data.put("totalPages", withdrawalsDmoPage.getTotalPages());
+			List<Map<String,Object>> content=new LinkedList<>();
+			for (WithdrawalsDmo dmo : withdrawalsDmoPage.getContent()) {
+				Map<String,Object> map=new HashMap<>(),user=new HashMap<>();
+				user.put("id", dmo.getUser().getId());
+				user.put("realName", dmo.getUser().getRealName());
+				map.put("id", dmo.getId());
+				map.put("user", user);
+				map.put("alipayAccount", dmo.getAlipayAccount());
+				map.put("money",dmo.getMoney());
+				map.put("createTime", dmo.getCreateTime());
+				map.put("dealTime",dmo.getDealTime());
+				map.put("dealAdmin", this.adminDao.findOne(dmo.getDealAdminId()));
+				map.put("state", dmo.getState());
+				content.add(map);
+			}
+			data.put("content", content);
+			return new ResultModel(true, "", data);
 		};
 	}
 
