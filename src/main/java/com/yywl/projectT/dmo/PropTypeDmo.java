@@ -22,24 +22,52 @@ public class PropTypeDmo implements Serializable{
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Integer id;
 	
-	private int uniqueId;
+	/**
+	 * 显示的单位
+	 */
+	private String unit;
 	
+	private int originalMoney;
+	
+	private boolean isShow;
+	
+	private int uniqueId;
+
 	private String name;
 
 	private String title;
 
 	private String photoUrl;
-	
-	private String description;
-	
-	private int badge;
-	
-	private int money;
 
+	private String description;
+
+	private int badge;
+
+	private int money;
+	
+	/**
+	 * 打折类型
+	 */
+	private String discountType;
+	
 	public PropTypeDmo() {
 		super();
 	}
 
+	public PropTypeDmo(Integer id, Integer uniqueId, String name, String title, String photoUrl, String description,
+			int badge, int money) {
+		super();
+		this.id = id;
+		this.uniqueId = uniqueId;
+		this.name = name;
+		this.title = title;
+		this.photoUrl = photoUrl;
+		this.description = description;
+		this.badge = badge;
+		this.money = money;
+	}
+
+	
 	public int getBadge() {
 		return badge;
 	}
@@ -48,6 +76,10 @@ public class PropTypeDmo implements Serializable{
 		return description;
 	}
 
+	public String getDiscountType() {
+		return discountType;
+	}
+	
 	public Integer getId() {
 		return id;
 	}
@@ -58,6 +90,10 @@ public class PropTypeDmo implements Serializable{
 	
 	public String getName() {
 		return name;
+	}
+
+	public int getOriginalMoney() {
+		return originalMoney;
 	}
 
 	public String getPhotoUrl() {
@@ -71,6 +107,14 @@ public class PropTypeDmo implements Serializable{
 	public int getUniqueId() {
 		return uniqueId;
 	}
+	
+	public String getUnit() {
+		return unit;
+	}
+	
+	public boolean isShow() {
+		return isShow;
+	}
 
 	public void setBadge(int badge) {
 		this.badge = badge;
@@ -78,6 +122,10 @@ public class PropTypeDmo implements Serializable{
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public void setDiscountType(String discountType) {
+		this.discountType = discountType;
 	}
 
 	public void setId(Integer id) {
@@ -92,8 +140,16 @@ public class PropTypeDmo implements Serializable{
 		this.name = name;
 	}
 
+	public void setOriginalMoney(int originalMoney) {
+		this.originalMoney = originalMoney;
+	}
+
 	public void setPhotoUrl(String photoUrl) {
 		this.photoUrl = photoUrl;
+	}
+
+	public void setShow(boolean isShow) {
+		this.isShow = isShow;
 	}
 
 	public void setTitle(String title) {
@@ -104,17 +160,8 @@ public class PropTypeDmo implements Serializable{
 		this.uniqueId = uniqueId;
 	}
 
-	public PropTypeDmo(Integer id, int uniqueId, String name, String title, String photoUrl, String description,
-			int badge, int money) {
-		super();
-		this.id = id;
-		this.uniqueId = uniqueId;
-		this.name = name;
-		this.title = title;
-		this.photoUrl = photoUrl;
-		this.description = description;
-		this.badge = badge;
-		this.money = money;
+	public void setUnit(String unit) {
+		this.unit = unit;
 	}
 
 }

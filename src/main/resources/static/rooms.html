@@ -113,7 +113,7 @@ header a:HOVER {
 					$.each(json.data.content,function(i,o){
 						var $tr=$('<tr></tr>').append('<td>'+o.id+'</td>').append('<td>'+o.name+'</td>');
 						$tr.append('<td>'+o.beginTime+'</td>').append('<td>'+o.endTime+'</td>');
-						$tr.append('<td>'+o.place+'</td>').append('<td>'+(o.memberCount||'不限')+'</td>');
+						$tr.append('<td>'+(o.place||'')+'</td>').append('<td>'+(o.memberCount||'不限')+'</td>');
 						$tr.append('<td>'+o.joinMember+'</td>');
 						$tr.append('<a href="javascript:deleteRoom('+o.id+')">解散</a>')
 						$tbody.append($tr);

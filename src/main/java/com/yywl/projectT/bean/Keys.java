@@ -80,8 +80,12 @@ public class Keys {
 		public final static String CHARSET = "utf-8";
 
 		public final static String CALL = "http://tomeet-app.hzease.com/alipay/call";
-		
-		public final static String APP_GATEWAY="http://tomeet-app.hzease.com/alipay/gateway";
+
+		public final static String APP_GATEWAY = "http://tomeet-app.hzease.com/alipay/gateway";
+
+		public final static String BUY_BADGE_CALL = "http://tomeet-app.hzease.com/badge/alipay/call";
+
+		public final static String BUY_PROP_CALL = "http://tomeet-app.hzease.com/prop/alipay/call";
 	}
 
 	public static class RongCloud {

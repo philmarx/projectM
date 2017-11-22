@@ -25,6 +25,14 @@ header a {
 header a:HOVER {
 	text-decoration: underline;
 }
+td{
+	margin: 0px;
+	padding: 0px;
+}
+th{
+	margin: 0px;
+	padding: 0px;
+}
 </style>
 </head>
 <body>
@@ -50,14 +58,18 @@ header a:HOVER {
 				<table class="table table-striped table-hover">
 					<thead>
 						<tr>
-							<th>道具ID</th>
-							<th>唯一标识(不能重复)</th>
+							<th class="width4">道具ID</th>
+							<th class="width4">唯一标识</th>
 							<th>别名</th>
 							<th>标签</th>
 							<th>描述</th>
 							<th>叶子</th>
-							<th>金额(分)</th>
-							<th>路径</th>
+							<th class="price">折扣价(分)</th>
+							<th class="price">原价(分)</th>
+							<th>单位</th>
+							<th>显示</th>
+							<th>折扣类型</th>
+							<th class="width20">路径</th>
 							<th>操作</th>
 						</tr>
 					</thead>
@@ -88,8 +100,12 @@ header a:HOVER {
 			params.description=$('#description').val();
 			params.badge=$('#badge').val()||0;
 			params.money=$('#money').val()||0;
+			params.originalMoney=$('#originalMoney').val()||0;
+			params.unit=$('#unit').val()||'';
 			params.photoUrl=$('#photoUrl').val();
-			$.post('admin/addPhotoType',params,function(json){
+			params.show=$('#show').val()||true;
+			params.discountType=$('#discountType').val()||'';
+			$.post('admin/addPropType',params,function(json){
 				if (!json.success) {
 					alert(json.msg);
 					return;
@@ -115,24 +131,38 @@ header a:HOVER {
 				if (json.success) {
 					var $tbody=$('tbody').html('');
 					$.each(json.data,function(i,o){
-						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td>'+o.id+'</td>').append('<td><input id="uniqueId'+o.id+'" value="'+o.uniqueId+'"/></td>');
+						var $tr=$('<tr id="tr'+o.id+'"></tr>').append('<td class="width4">'+o.id+'</td>').append('<td class="width4"><input id="uniqueId'+o.id+'" value="'+o.uniqueId+'"/></td>');
 						$tr.append('<td><input id="name'+o.id+'" value="'+o.name+'"/></td>').append('<td><input id="title'+o.id+'" value="'+o.title+'"/></td>');
-						$tr.append('<td><input id="description'+o.id+'" value="'+o.description+'"/></td>').append('<td><input id="badge'+o.id+'" value="'+o.badge+'"/></td>');
-						$tr.append('<td><input id="money'+o.id+'" value="'+o.money+'"/></td>').append('<td><input id="photoUrl'+o.id+'" value="'+o.photoUrl+'"/></td>');
+						$tr.append('<td><input id="description'+o.id+'" value="'+o.description+'"/></td>').append('<td class="width4"><input id="badge'+o.id+'" value="'+o.badge+'"/></td>');
+						$tr.append('<td class="price" ><input id="money'+o.id+'" value="'+o.money+'"/></td>').append('<td class="price"><input  id="originalMoney'+o.id+'" value="'+o.originalMoney+'"/></td>');
+						$tr.append('<td class="width4"><input id="unit'+o.id+'" value="'+o.unit+'"/></td>').append('<td class="width4"><input  id="show'+o.id+'" value="'+o.show+'"/></td>');
+						$tr.append('<td class="width4"><input id="discountType'+o.id+'" value="'+o.discountType+'"/></td>').append('<td class="width20"><input id="photoUrl'+o.id+'" value="'+o.photoUrl+'"/></td>');
 						var $td=$('<td></td>').append('<a href="javascript:lookPhoto('+o.id+')" style="margin-right:10px;">查看图片</a>');
 						$td.append('<a href="javascript:update('+o.id+')"  style="margin-right:10px;">修改</a>');
 						$td.append('<a href="javascript:remove('+o.id+')">删除</a>');
 						$tr.append($td);
 						$tbody.append($tr);
 					});
-					var $tr=$('<tr></tr>').append('<td></td>').append('<td><input id="uniqueId" /></td>');
+					var $tr=$('<tr></tr>').append('<td class="width4"></td>').append('<td class="width4"><input id="uniqueId"/></td>');
 					$tr.append('<td><input id="name"/></td>').append('<td><input id="title"/></td>');
-					$tr.append('<td><input id="description"/></td>').append('<td><input id="badge"/></td>');
-					$tr.append('<td><input id="money"/></td>').append('<td><input id="photoUrl" /></td>');
+					$tr.append('<td><input id="description"/></td>').append('<td class="width4"><input id="badge"/></td>');
+					$tr.append('<td class="price"><input id="money"/></td>').append('<td class="price"><input id="originalMoney"/></td>');
+					$tr.append('<td class="width4"><input id="unit" /></td>').append('<td class="width4"><input id="show" /></td>');
+					$tr.append('<td class="width4"><input id="discountType" /></td>').append('<td><input class="width20" id="photoUrl" /></td>');
 					var $td=$('<td></td>').append('<a href="javascript:lookPhoto()" style="margin-right:10px;">查看图片</a>');
 					$td.append('<a href="javascript:add()">添加</a>');
 					$tr.append($td);
 					$tbody.append($tr);
+					var $td=$('td');
+					var inputs=document.getElementsByTagName('input');
+					$.each(inputs,function(i,o){
+						$(o).css({"width":"10em"})
+						$(o).parent().css({"width":"10em"});
+					});
+					$('.width4').css({"width":"4em"});
+					$('.width4').children().css({"width":"4em"});
+					$('.width20').css({"width":"30em"});
+					$('.width20').children().css({"width":"30em"});
 				} else {
 					alert(json.msg);
 				}
@@ -147,7 +177,7 @@ header a:HOVER {
 			var params={"loginId":sessionStorage.getItem('userId'),
 					"token":sessionStorage.getItem('token')};
 			params.id=id;
-			$.post('admin/photoType/remove',params,function(json){
+			$.post('admin/propType/remove',params,function(json){
 				if(json.success){
 					load();
 					alert('删除成功');
@@ -184,8 +214,12 @@ header a:HOVER {
 			params.description=$('#description'+id).val();
 			params.badge=$('#badge'+id).val()||0;
 			params.money=$('#money'+id).val()||0;
+			params.originalMoney=$('#originalMoney'+id).val()||0;
+			params.unit=$('#unit'+id).val()||'';
 			params.photoUrl=$('#photoUrl'+id).val();
-			$.post('admin/updatePhotoType',params,function(json){
+			params.show=$('#show'+id).val()||true;
+			params.discountType=$('#discountType'+id).val()||'';
+			$.post('admin/updatePropType',params,function(json){
 				if (!json.success) {
 					alert(json.msg);
 					return;

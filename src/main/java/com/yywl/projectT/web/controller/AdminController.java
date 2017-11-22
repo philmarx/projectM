@@ -239,30 +239,38 @@ public class AdminController {
 		};
 	}
 
-	@PostMapping("photoType/remove")
-	public Object removePhotoType(long loginId, String token, int id) throws Exception {
+	@PostMapping("propType/remove")
+	public Object removePropType(long loginId, String token, int id) throws Exception {
 		this.adminBo.loginByToken(loginId, token);
 		this.propTypeDao.delete(id);
 		return new ResultModel();
 	}
 
-	@PostMapping("addPhotoType")
-	public Object addPhotoType(long loginId, String token, String name, String title, String description, int money,
-			int badge, String photoUrl, int uniqueId) throws Exception {
+	@PostMapping("addPropType")
+	public Object addPropType(long loginId, String token, String name, String title, String description, int money, int originalMoney,
+			int badge, String unit,String photoUrl, int uniqueId,boolean show,String discountType) throws Exception {
 		this.adminBo.loginByToken(loginId, token);
 		PropTypeDmo dmo = new PropTypeDmo(null, uniqueId, name, title, photoUrl, description, badge, money);
+		dmo.setShow(show);
+		dmo.setOriginalMoney(originalMoney);
+		dmo.setUnit(unit);
+		dmo.setDiscountType(discountType);
 		this.propTypeDao.save(dmo);
 		return new ResultModel();
 	}
 
-	@PostMapping("updatePhotoType")
-	public Object updatePhotoType(long loginId, int id, String token, String name, String title, String description,
-			int money, int badge, String photoUrl, int uniqueId) throws Exception {
+	@PostMapping("updatePropType")
+	public Object updatePropType(long loginId, int id, String token, String name, String title, String description,
+			int money,String unit, String discountType,int originalMoney,int badge, String photoUrl, int uniqueId,boolean show) throws Exception {
 		this.adminBo.loginByToken(loginId, token);
 		if (!this.propTypeDao.exists(id)) {
 			return new ResultModel(false, "id不存在", null);
 		}
 		PropTypeDmo dmo = new PropTypeDmo(id, uniqueId, name, title, photoUrl, description, badge, money);
+		dmo.setShow(show);
+		dmo.setOriginalMoney(originalMoney);
+		dmo.setUnit(unit);
+		dmo.setDiscountType(discountType);
 		this.propTypeDao.save(dmo);
 		return new ResultModel();
 	}

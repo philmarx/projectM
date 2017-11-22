@@ -86,6 +86,7 @@ public class RoomBoImpl implements RoomBo {
 		this.jdbc.update("update location set room_id=null where room_id=" + room.getId().longValue());
 		this.jdbc.update("update complaint set room_id=null where room_id=" + room.getId().longValue());
 		this.jdbc.update("delete from not_late_reason where room_id=" + room.getId().longValue());
+		this.jdbc.update("delete from join_room_log where room_id="+room.getId().longValue());
 		this.moneyTransactionBo.deleteRoom(room, reason);
 	}
 
